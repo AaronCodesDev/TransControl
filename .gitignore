@@ -1,0 +1,14 @@
+# Entorno virtual
+venv-mac/
+
+# Archivos compilados de Python
+__pycache__/
+
+# Base de datos local (si quieres evitar subir la base de datos de pruebas)
+*.db
+
+# Configuraciones específicas de VSCode (opcional, pero recomendable)
+.vscode/
+
+# Otros archivos de sistema (opcional)
+.DS_Store
