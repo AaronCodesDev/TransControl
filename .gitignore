@@ -12,3 +12,6 @@ __pycache__/
 
 # Otros archivos de sistema (opcional)
 .DS_Store
+
+# Credenciales 
+credentials.json
