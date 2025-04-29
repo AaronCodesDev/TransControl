@@ -1,6 +1,7 @@
 import flet as ft
 from database.models import Usuario
 from datetime import datetime
+from utils.security import hash_password  
 
 import bcrypt
 
@@ -95,7 +96,7 @@ class RegisterView:
             
         # Crear nuevo usuario
         try:
-            hashed_password = bcrypt.hashpw(self.password.value.encode(), bcrypt.gensalt())
+            hashed_password = hash_password(self.password.value)
             new_user = Usuario(
                 usuario=self.username.value,
                 nif=self.nif.value,
