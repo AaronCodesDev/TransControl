@@ -33,7 +33,6 @@ class DashboardView:
                 controls=[
                     ft.Column(
                         controls=[
-                            ft.Row([self.theme_button], alignment=ft.MainAxisAlignment.END),
                             ft.Container(
                                 content=self.welcome_card,
                                 alignment=ft.alignment.center,
@@ -50,6 +49,7 @@ class DashboardView:
                     center_title=True,
                     bgcolor=ft.colors.GREEN_300,
                     automatically_imply_leading=False,
+                    actions=[self.theme_button],
                 ),
                 floating_action_button=self._build_fab(),  # <-- FAB CORRECTO
                 floating_action_button_location=ft.FloatingActionButtonLocation.CENTER_DOCKED,
@@ -66,6 +66,7 @@ class DashboardView:
                         ft.Text("Bienvenido al Dashboard", size=20, weight="bold"),
                         ft.Text(f"{self.user.nombre} {self.user.apellido}", size=16, italic=True, color=ft.colors.GREY),
                         ft.Text(f"Rol: {self.user.rol}", size=14, color=ft.colors.BLUE_GREY),
+                        ft.Text(f"Fecha: {datetime.now().strftime('%d/%m/%Y')}", size=14, color=ft.colors.BLUE_GREY),
                     ],
                     alignment=ft.MainAxisAlignment.CENTER,
                     horizontal_alignment=ft.CrossAxisAlignment.CENTER,
@@ -81,12 +82,25 @@ class DashboardView:
     def _build_stats_row(self):
         return ft.Row(
             controls=[
-                self._build_stat_card(ft.icons.FORMAT_LIST_NUMBERED, f'Total Rutas', str(self.total_routes) if self.total_routes is not None else "..."),
-                self._build_stat_card(ft.icons.ROUTE, f'Rutas Hoy', str(self.daily_routes) if self.daily_routes is not None else "..."),
-                self._build_stat_card(ft.icons.APARTMENT, 'Empresa', str(self.company_count) if self.company_count is not None else "...")
+                self._build_stat_card(
+                    ft.icons.FORMAT_LIST_NUMBERED,
+                    f'Historial \nRutas \nRegistradas',
+                    str(self.total_routes) if self.total_routes is not None else "..."
+                ),
+                self._build_stat_card(
+                    ft.icons.ROUTE,
+                    f'Rutas \nRegistradas \nHoy', 
+                    str(self.daily_routes) if self.daily_routes is not None else "..."
+                    ),
+                self._build_stat_card(
+                    ft.icons.APARTMENT, 
+                    f'Empresas \nRegistradas \n ', 
+                    str(self.company_count) if self.company_count is not None else "..."
+                    ),
             ],
             alignment=ft.MainAxisAlignment.CENTER,
-            spacing=20
+            
+            spacing=5
         )
 
     def _build_stat_card(self, icon, title, value):
@@ -95,13 +109,14 @@ class DashboardView:
                 content=ft.Column(
                     [
                         ft.Icon(name=icon, size=40, color=ft.colors.GREEN),
-                        ft.Text(title, weight='bold'),
-                        ft.Text(value, size=26),
+                        ft.Text(title, size=12, weight=ft.FontWeight.BOLD, text_align=ft.TextAlign.CENTER),
+                        ft.Text(value, size=18, weight=ft.FontWeight.BOLD, text_align=ft.TextAlign.CENTER),
                     ],
+                    alignment=ft.MainAxisAlignment.CENTER,
                     horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                 ),
-                padding=15,
-                width=120,
+                padding=10,
+                width=110,
                 alignment=ft.alignment.center,
             )
         )

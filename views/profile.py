@@ -14,7 +14,7 @@ class ProfileView:
                 controls=[
                     ft.Column(
                         controls=[
-                            ft.Row([self.theme_button], alignment=ft.MainAxisAlignment.END),
+                            ft.Row(alignment=ft.MainAxisAlignment.END),
                             self._build_profile_card(),
                         ],
                         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
@@ -27,6 +27,7 @@ class ProfileView:
                     center_title=True,
                     bgcolor=ft.colors.GREEN_300,
                     automatically_imply_leading=False,
+                    actions=[self.theme_button],
                 ),
                 bottom_appbar=self._build_bottom_appbar()  # 🔥 Añadido correctamente
             )

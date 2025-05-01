@@ -18,27 +18,27 @@ def main(page: ft.Page):
     init_db()
     page.db = SessionLocal()  # Sesión accesible desde cualquier vista
 
-    # Toggle de tema
+    # ✅ CREACIÓN CORRECTA DEL BOTÓN DE TEMA
+    theme_icon_button = ft.IconButton(
+        icon=Icons.DARK_MODE,
+        tooltip='Cambiar tema',
+        on_click=lambda e: toggle_theme(e)  # usamos lambda para pasar el evento
+    )
+
+    # ✅ TOGGLE DE TEMA CORREGIDO (accede directamente a theme_icon_button)
     def toggle_theme(e):
         page.theme_mode = (
             ft.ThemeMode.DARK if page.theme_mode == ft.ThemeMode.LIGHT else ft.ThemeMode.LIGHT
         )
-        theme_button.content.icon = (
+        theme_icon_button.icon = (
             Icons.DARK_MODE if page.theme_mode == ft.ThemeMode.LIGHT else Icons.LIGHT_MODE
         )
         page.update()
 
-    theme_button = ft.Container(
-        content=ft.IconButton(
-            icon=Icons.DARK_MODE,
-            tooltip='Cambiar tema',
-            on_click=toggle_theme,
-        ),
-        padding=ft.padding.only(top=40),
-        alignment=ft.alignment.top_right,
-        width=60
-    )
+    # ✅ Este es el botón que se pasa a las vistas
+    theme_button = theme_icon_button
 
+    # SISTEMA DE RUTAS
     def route_change(e):
         print(f'Ruta cambiada a: {page.route}')
         if page.route == '/dashboard':
@@ -52,16 +52,15 @@ def main(page: ft.Page):
 
     page.on_route_change = route_change
 
-    # Sistema de navegación
+    # Navegación
     def go_to_register():
         print("Redirigiendo a la vista de registro...")
         page.views.clear()
         RegisterView(page, theme_button, go_to_login).build()
         page.update()
-        
+
     def on_login_success(user):
         print(f'Login exitoso con usuario: {user}')
-        # Buscar el objeto completo del usuario
         page.user = user
         go_to_dashboard()
 

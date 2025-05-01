@@ -1,5 +1,5 @@
 from sqlalchemy import create_engine
-from .models import Base, Usuario  # Asegúrate de que la importación sea correcta
+from database.models import Base, Usuario  # Asegúrate de que la importación sea correcta
 from sqlalchemy.orm import sessionmaker
 import os
 import time
