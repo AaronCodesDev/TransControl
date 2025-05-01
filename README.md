@@ -17,11 +17,14 @@ Permite almacenar, consultar y organizar información de rutas, transportistas y
 
 ## 📂 Estructura del proyecto
 
+
+
 ```
 TransControl/
 ├── assets/              # Archivos estáticos (imágenes, iconos, etc.)
 ├── database/            # Scripts de base de datos y modelos
 ├── storage/             # Documentos o archivos de usuarios
+├── utils/               # Utilidades como hashing de contraseñas
 ├── views/               # Vistas principales de la aplicación
 ├── main.py              # Punto de entrada de la aplicación
 ├── requirements.txt     # Dependencias del proyecto
@@ -35,6 +38,17 @@ TransControl/
 - Python 3.10 o superior
 - Librerías listadas en `requirements.txt`
 
+Crear Venv
+
+```bash
+python3 -m venv venv
+```
+Entrar en Entorno virtual
+
+```bash
+source venv/bin/activate      
+```
+
 Instalar las dependencias:
 
 ```bash
@@ -45,10 +59,15 @@ pip install -r requirements.txt
 
 ## 🛠️ Cómo ejecutar
 
+Para crear la base datos para pruebas
+```bash
+python3 database/reset_db.py
+```
+
 Dentro de la carpeta del proyecto:
 
 ```bash
-python main.py
+python main.py o flet main.py
 ```
 
 ---

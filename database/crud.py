@@ -1,17 +1,16 @@
 from sqlalchemy.orm import Session
 from database.models import Usuario, Documentos, Empresas
-import bcrypt  # Para el manejo seguro de contraseñas
+from utils.security import hash_password, verify_password  # 👈 Importa las dos funciones de seguridad
 
 ### CRUD PARA USUARIOS ###
 
 # Crear un nuevo usuario
 def create_user(db: Session, nombre: str, apellido: str, nif: str, email: str, password: str):
-    # Encriptar la contraseña antes de guardarla
-    hashed_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
+    hashed_password = hash_password(password)
     db_user = Usuario(nombre=nombre, apellido=apellido, nif=nif, email=email, contrasena=hashed_password)
     db.add(db_user)
     db.commit()
-    db.refresh(db_user)  # Actualiza datos del usuario después de insertarlo
+    db.refresh(db_user)
     return db_user
 
 # Obtener un usuario por su email
@@ -24,24 +23,22 @@ def login_user(db: Session, email: str, password: str):
     if not user:
         return None  # Usuario no encontrado
 
-    # Validar la contraseña usando bcrypt
-    if bcrypt.checkpw(password.encode(), user.contrasena):
+    # Validar la contraseña usando verify_password
+    if verify_password(password, user.contrasena):
         return user  # Login exitoso
 
     return None  # Contraseña incorrecta
 
 # Registro de usuario (verificando que no exista antes)
 def register_user(db: Session, nombre: str, apellido: str, nif: str, email: str, password: str):
-    # Primero revisamos si ya existe un usuario con ese email o nif
     existing_user = db.query(Usuario).filter(
         (Usuario.email == email) | (Usuario.nif == nif)
     ).first()
     
     if existing_user:
-        return None  # Ya existe, no se puede registrar
+        return None
 
-    # Si no existe, creamos el nuevo usuario
-    hashed_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
+    hashed_password = hash_password(password)
     new_user = Usuario(
         nombre=nombre,
         apellido=apellido,
@@ -54,7 +51,6 @@ def register_user(db: Session, nombre: str, apellido: str, nif: str, email: str,
     db.refresh(new_user)
     return new_user
 
-
 # Actualizar usuario
 def update_user(db: Session, user_id: int, nombre: str = None, apellido: str = None, password: str = None):
     db_user = db.query(Usuario).filter(Usuario.id == user_id).first()
@@ -64,7 +60,7 @@ def update_user(db: Session, user_id: int, nombre: str = None, apellido: str = N
         if apellido:
             db_user.apellido = apellido
         if password:
-            db_user.contrasena = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
+            db_user.contrasena = hash_password(password)  # 👈 Aquí usas hash_password también
         db.commit()
         db.refresh(db_user)
     return db_user

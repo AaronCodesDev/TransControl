@@ -1,9 +1,10 @@
 # reset_db.py
 import os
-from .models import Base, Usuario
+import time
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-import time
+from database.models import Base, Usuario  # 👈 Corrige la importación si falla con '.models'
+from utils.security import hash_password  # 👈 Importamos hash_password
 
 # Configuración de la base de datos
 DATABASE_URL = "sqlite:///database/transcontrol.db"
@@ -23,24 +24,25 @@ def create_db():
     """Crea las tablas en una nueva base de datos."""
     Base.metadata.create_all(bind=engine)
     print("✅ Tablas creadas exitosamente")
-    time.sleep(0.5)  # Espera para asegurar que todo se crea antes de insertar datos
+    time.sleep(0.5)
 
 def insert_initial_admin():
-    """Inserta el usuario admin inicial."""
+    """Inserta el usuario admin inicial con contraseña cifrada."""
     db = SessionLocal()
     try:
+        hashed_password = hash_password("admin123")  # 👈 Ahora sí, ciframos la contraseña
         admin = Usuario(
             usuario="admin",
             nombre="Admin",
             apellido="Sistema",
             nif="123456789W",
             email="admin@transcontrol.com",
-            contrasena="admin123",  # Recuerda cifrar en producción
+            contrasena=hashed_password,  # 👈 Guardamos el hash
             rol="admin"
         )
         db.add(admin)
         db.commit()
-        print("👤 Usuario admin creado exitosamente")
+        print("👤 Usuario admin creado exitosamente (con contraseña segura)")
     except Exception as e:
         db.rollback()
         print(f"⚠️ Error al insertar usuario admin: {e}")

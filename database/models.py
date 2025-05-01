@@ -11,11 +11,10 @@ class Usuario(Base):
     apellido = Column(String(50), index=True)
     nif = Column(String(30), unique=True, index=True)
     email = Column(String(100), unique=True, index=True)
-    contrasena = Column(String(50))
+    contrasena = Column(String(128))  # <-- 🔥 Aumentado para guardar bcrypt hash
     fecha_creacion = Column(DateTime)
-    rol = (Column(String(20)))
-    
-    # Crear relaciones entre documentos y usuarios
+    rol = Column(String(20))
+
     documentos = relationship('Documentos', back_populates='usuario')
     
 class Empresas(Base):
