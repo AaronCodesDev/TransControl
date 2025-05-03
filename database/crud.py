@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 from database.models import Usuario, Documentos, Empresas
 from utils.security import hash_password, verify_password  # 👈 Importa las dos funciones de seguridad
+from datetime import datetime
 
 ### CRUD PARA USUARIOS ###
 
@@ -85,6 +86,14 @@ def get_daily_routes(db: Session, fecha: str):
 
 ### CRUD PARA EMPRESAS ###
 
-# Obtener el conteo de empresas registradas
+# Obtener total de empresas registradas
 def get_company_count(db: Session):
     return db.query(Empresas).count()
+
+# Obener total de documentos 
+def get_documents_count(db: Session):
+    return db.query(Documentos).count()
+
+# Obtener total de Documentos diarios
+def get_dealy_documents(db: Session, fecha: str):
+    return db.query(Documentos).filter(Documentos.fecha_transporte == datetime.today()).count()

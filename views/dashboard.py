@@ -1,6 +1,6 @@
 import flet as ft
 from datetime import datetime
-from database.models import Documentos, Empresas
+from database.models import Documentos, Empresas , Usuario
 from database.crud import get_document_count, get_daily_routes, get_company_count
 
 class DashboardView:
@@ -11,7 +11,7 @@ class DashboardView:
         
         self.total_routes = None
         self.daily_routes = None
-        self.company_count = None
+        self.company_count = get_company_count(self.page.db)
         
         self.welcome_card = self._build_welcome_card()
         self.stats_row = self._build_stats_row()
@@ -51,9 +51,9 @@ class DashboardView:
                     automatically_imply_leading=False,
                     actions=[self.theme_button],
                 ),
-                floating_action_button=self._build_fab(),  # <-- FAB CORRECTO
+                floating_action_button=self._build_fab(),  
                 floating_action_button_location=ft.FloatingActionButtonLocation.CENTER_DOCKED,
-                bottom_appbar=self._build_bottom_appbar()  # <-- SOLO BottomAppBar aquí
+                bottom_appbar=self._build_bottom_appbar()
             )
         )
         self.page.update()

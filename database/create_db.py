@@ -33,9 +33,8 @@ def insert_initial_admin():
         hashed_password = hash_password(password)
 
         admin = Usuario(
-            usuario="admin",
             nombre="Admin",
-            apellido="Sistema",
+            apellido="TransControl",
             nif="123456789W",
             email="admin@transcontrol.com",
             contrasena=hashed_password,

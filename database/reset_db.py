@@ -32,9 +32,8 @@ def insert_initial_admin():
     try:
         hashed_password = hash_password("admin123")  # 👈 Ahora sí, ciframos la contraseña
         admin = Usuario(
-            usuario="admin",
             nombre="Admin",
-            apellido="Sistema",
+            apellido="TransControl",
             nif="123456789W",
             email="admin@transcontrol.com",
             contrasena=hashed_password,  # 👈 Guardamos el hash

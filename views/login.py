@@ -52,7 +52,7 @@ class LoginView:
                 if user:
                     print(f"✅ Login exitoso para {user.email}")
                     self.error_text.visible = False
-                    self.message_text.value = f'✅ Bienvenido {user.nombre}'
+                    self.message_text.value = f'✅ Bienvenido {user.nombre} {user.apellido}'
                     self.message_text.visible = True
 
                     if self.remember_me.value:
@@ -98,8 +98,11 @@ class LoginView:
                 '/login',
                 controls=[
                     ft.Column(
-                        [
-                            ft.Row([self.theme_button], alignment=ft.MainAxisAlignment.END),
+                        controls=[
+                            ft.Container(
+                                content=ft.Row([self.theme_button], alignment=ft.MainAxisAlignment.END),
+                                margin=ft.margin.only(top=30)  # Añadimos el margen superior aquí
+                            ),
                             logo,
                             ft.Text('Iniciar Sesión', size=30, weight='bold'),
                             self.email,
@@ -118,8 +121,9 @@ class LoginView:
                             ),
                         ],
                         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                        alignment=ft.MainAxisAlignment.CENTER
-                    )
+                        alignment=ft.MainAxisAlignment.CENTER,
+                        spacing=10,
+                    ),
                 ]
             )
         )

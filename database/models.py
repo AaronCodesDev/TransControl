@@ -6,7 +6,6 @@ class Usuario(Base):
     __tablename__ = 'usuarios'
 
     id = Column(Integer, primary_key=True, index=True)
-    usuario = Column(String(50), unique=True, index=True)
     nombre = Column(String(50), index=True)
     apellido = Column(String(50), index=True)
     nif = Column(String(30), unique=True, index=True)
@@ -22,8 +21,11 @@ class Empresas(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     nombre = Column(String(100), index=True)
-    cif = Column(String(20), unique=True, index=True)
     direccion = Column(String(200))
+    codigo_postal = Column(String(20))
+    ciudad = Column(String(50))
+    provincia = Column(String(50))
+    cif = Column(String(20), unique=True, index=True)
     telefono = Column(String(30))
     email = Column(String(100), unique=True, index=True)
     fecha_creacion = Column(DateTime)
