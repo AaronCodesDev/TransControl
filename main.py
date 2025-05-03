@@ -3,6 +3,7 @@ from flet import Icons
 from views.login import LoginView
 from views.register import RegisterView
 from views.dashboard import DashboardView
+from views.companies import CompaniesView
 from database import SessionLocal, init_db
 from database.models import Usuario
 from views.profile import ProfileView
@@ -18,14 +19,12 @@ def main(page: ft.Page):
     init_db()
     page.db = SessionLocal()  # Sesión accesible desde cualquier vista
 
-    # ✅ CREACIÓN CORRECTA DEL BOTÓN DE TEMA
     theme_icon_button = ft.IconButton(
         icon=Icons.DARK_MODE,
         tooltip='Cambiar tema',
         on_click=lambda e: toggle_theme(e)  # usamos lambda para pasar el evento
     )
 
-    # ✅ TOGGLE DE TEMA CORREGIDO (accede directamente a theme_icon_button)
     def toggle_theme(e):
         page.theme_mode = (
             ft.ThemeMode.DARK if page.theme_mode == ft.ThemeMode.LIGHT else ft.ThemeMode.LIGHT
@@ -35,7 +34,7 @@ def main(page: ft.Page):
         )
         page.update()
 
-    # ✅ Este es el botón que se pasa a las vistas
+    # Este es el botón que se pasa a las vistas
     theme_button = theme_icon_button
 
     # SISTEMA DE RUTAS
@@ -49,7 +48,9 @@ def main(page: ft.Page):
             LoginView(page, on_login_success, theme_button, go_to_register).build()
         elif page.route == '/register':
             RegisterView(page, theme_button, go_to_login).build()
-
+        elif page.route == '/companies':
+            CompaniesView(page, theme_button).build()
+            
     page.on_route_change = route_change
 
     # Navegación
@@ -74,6 +75,12 @@ def main(page: ft.Page):
         print(f'Redirigiendo al Dashboard de: {page.user.nombre}')
         page.views.clear()
         DashboardView(page, theme_button).build()
+        
+    def go_to_companies():
+        print("Redirigiendo a la vista de empresas...")
+        page.views.clear()
+        page.go(page.route)
+        CompaniesView(page, theme_button).build()
 
     # Comenzar mostrando la pantalla de login
     go_to_login()
