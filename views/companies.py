@@ -1,12 +1,18 @@
 import flet as ft
+from database.models import SessionLocal, Empresas  # Importa la conexión a la base de datos y el modelo
 
 class CompaniesView:
     def __init__(self, page: ft.Page, theme_button):
         self.page = page
         self.theme_button = theme_button
-        self.companies = []
+        self.companies = []  # Lista vacía inicial
+        self.filtered_companies = []
+        self.search_term = ''
+        self.table = None  # 🔥 Referencia al DataTable para actualizarlo dinámicamente
 
     def build(self):
+        self.table = self._build_companies_list()  # 🔥 Guardamos la tabla como atributo
+
         self.page.views.clear()
         self.page.views.append(
             ft.View(
@@ -14,13 +20,15 @@ class CompaniesView:
                 controls=[
                     ft.Column(
                         controls=[
-                            ft.Row(alignment=ft.MainAxisAlignment.END),
-                            self._build_companies_list(),
+                            self._build_search_box(),
+                            self.table,  # 🔥 Reutilizamos el DataTable
                         ],
+                        alignment=ft.MainAxisAlignment.START,
                         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                        alignment=ft.MainAxisAlignment.CENTER,
-                        spacing=30
-                    )
+                        spacing=20,
+                        scroll=True,
+                        expand=True
+                    ),
                 ],
                 appbar=ft.AppBar(
                     title=ft.Text('Empresas Registradas'),
@@ -29,35 +37,82 @@ class CompaniesView:
                     automatically_imply_leading=False,
                     actions=[self.theme_button],
                 ),
-                bottom_appbar=self._build_bottom_appbar()  # 🔥 Añadido correctamente
+                bottom_appbar=self._build_bottom_appbar()
             )
         )
         self.page.update()
-        
-    def _build_companies_list(self):
-        company_cards = []
-        for company in self.companies:
-            company_Card = ft.Card(
-                elevation=8,
-                content=ft.Container(
-                    width=350,
-                    padding=30,
-                    alignment=ft.alignment.center,
-                    content=ft.Column(
-                        [
-                            ft.Text(f'Nombre: {company.nombre}', size=22, weight='bold'),
-                            ft.Divider(),
-                            ft.Text(f'Direccion: {company.direccion}', size=16, italic=True, color=ft.colors.GREY),
-                            ft.Text(f'Email: {company.email}', size=16, italic=True, color=ft.colors.GREY),
-                            ft.Text(f'Telefono: {company.telefono}', size=14, color=ft.colors.BLUE_GREY),
-                        ],
-                        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                        spacing=10
-                    )
+
+    def _build_search_box(self):
+        return ft.Column(
+            controls=[
+                ft.TextField(
+                    label="Buscar empresa",
+                    hint_text="Nombre de la empresa",
+                    value=self.search_term,  # 🔥 Mantiene el texto actual
+                    width=300,
+                    prefix_icon=ft.icons.SEARCH,
+                    on_change=self._filter_companies
                 ),
+            ],
+            alignment=ft.MainAxisAlignment.START,
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+            spacing=10,
+        )    
+    
+    def _filter_companies(self, e):
+        self.search_term = e.control.value  # 🔥 Guardamos el texto actual
+        search_term = self.search_term.lower()
+        print(f'Filtrando empresas por: {search_term}')
+
+        if search_term:
+            self.filtered_companies = [
+                company for company in self.companies
+                if search_term in company.nombre.lower()
+            ]
+        else:
+            self.filtered_companies = self.companies
+
+        self._update_companies_list()  # 🔥 Solo actualizamos el contenido de la tabla
+
+    def _build_companies_list(self):
+        rows = [
+            ft.DataRow(
+                cells=[
+                    ft.DataCell(ft.Text(company.nombre, max_lines=1, overflow='ellipsis')),
+                    ft.DataCell(ft.Text(company.cif, max_lines=1, overflow='ellipsis')),
+                    ft.DataCell(ft.Text(company.direccion, max_lines=1, overflow='ellipsis')),
+                    ft.DataCell(ft.Text(company.telefono, max_lines=1, overflow='ellipsis')),
+                ]
             )
-            company_cards.append(company_Card)
-        return ft.Column(controls=company_cards)
+            for company in self.filtered_companies
+        ]
+
+        return ft.DataTable(
+            columns=[
+                ft.DataColumn(ft.Text("Nombre")),
+                ft.DataColumn(ft.Text("CIF")),
+                ft.DataColumn(ft.Text("Dirección")),
+                ft.DataColumn(ft.Text("Teléfono")),
+            ],
+            rows=rows,
+        )
+
+    def _update_companies_list(self):
+        self.table.rows = [  # 🔥 Solo cambiamos el contenido
+            ft.DataRow(
+                cells=[
+                    ft.DataCell(ft.Text(company.nombre, max_lines=1, overflow='ellipsis')),
+                    ft.DataCell(ft.Text(company.cif, max_lines=1, overflow='ellipsis')),
+                    ft.DataCell(ft.Text(company.direccion, max_lines=1, overflow='ellipsis')),
+                    ft.DataCell(ft.Text(company.telefono, max_lines=1, overflow='ellipsis')),
+                ]
+            )
+            for company in self.filtered_companies
+        ]
+        self.page.update()
+
+    def _on_company_click(self, company):
+        print(f"Empresa seleccionada: {company.nombre}")
     
     def _build_bottom_appbar(self):
         return ft.BottomAppBar(
@@ -74,3 +129,14 @@ class CompaniesView:
                 alignment=ft.MainAxisAlignment.SPACE_AROUND,
             )
         )
+
+    def fetch_companies(self):
+        print("Cargando empresas desde la base de datos...")
+        session = SessionLocal()
+        try:
+            self.companies = session.query(Empresas).all()
+            print(f"Empresas cargadas: {self.companies}")
+            self.filtered_companies = self.companies
+            self.build()
+        finally:
+            session.close()

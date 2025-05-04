@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Float, Date
 from sqlalchemy.orm import relationship, sessionmaker
-from . import Base 
+from database.db import Base , SessionLocal
 
 class Usuario(Base):
     __tablename__ = 'usuarios'

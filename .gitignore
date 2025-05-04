@@ -1,5 +1,6 @@
 # Entorno virtual
-.venv-mac/
+venv/
+.venv/
 
 # Archivos compilados de Python
 __pycache__/

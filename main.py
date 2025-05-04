@@ -14,6 +14,7 @@ def main(page: ft.Page):
     page.theme_mode = ft.ThemeMode.LIGHT
     page.padding = 20
     page.vertical_alignment = ft.MainAxisAlignment.CENTER
+    page.scroll = 'auto'
 
     # Inicialización de la base de datos
     init_db()
@@ -49,7 +50,7 @@ def main(page: ft.Page):
         elif page.route == '/register':
             RegisterView(page, theme_button, go_to_login).build()
         elif page.route == '/companies':
-            CompaniesView(page, theme_button).build()
+            CompaniesView(page, theme_button).fetch_companies()
             
     page.on_route_change = route_change
 
