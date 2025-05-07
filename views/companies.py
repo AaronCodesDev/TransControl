@@ -17,7 +17,10 @@ class CompaniesView:
         )
 
     def build(self):
-        self.table = self._build_companies_list()
+        if not self.table:
+            self.table = self._build_companies_list()
+            
+        self._update_companies_list()
 
         self.page.views.clear()
         self.page.views.append(
@@ -105,6 +108,11 @@ class CompaniesView:
         )
 
     def _update_companies_list(self):
+        print('Actualizando lista de empresas...')
+        if self.table is None:
+            self.table = self._build_companies_list()
+        
+        
         self.table.rows = [
             ft.DataRow(
                 cells=[
@@ -116,47 +124,100 @@ class CompaniesView:
             )
             for company in self.filtered_companies
         ]
+        
+        if self.table not in self.page.controls:
+            self.page.controls.append(self.table)
+            
         self.page.update()
 
     def _on_company_click(self, e):
+        
         company = e.control.data
-        print('click recibido')
-
+        print(f'Editando Empresa: {company.nombre}')
+        session = SessionLocal()
+        company = session.query(Empresas).filter(Empresas.id == company.id).first()
+        
+        if not company:
+            print('Empresa no encontrada')
+            session.close()
+            return
+        
+        # Form Editar datos
+        nombre = ft.TextField(label='Nombre', value=company.nombre)
+        cif = ft.TextField(label='Cif', value=company.cif)
+        direccion = ft.TextField(label='Dirección', value=company.direccion)
+        ciudad = ft.TextField(label='Ciudad', value=company.ciudad)
+        provincia = ft.TextField(label='Provincia', value=company.provincia)
+        codigo = ft.TextField(label='Código postal', value=company.codigo_postal)
+        email = ft.TextField(label='Email', value=company.email)
+        telefono = ft.TextField(label='Teléfono', value=company.telefono)
+        
+        def edit_company(e):
+            print(f'Actualizando datos empresa: {company.nombre}')
+            try:
+                company.nombre = nombre.value
+                company.cif = cif.value
+                company.direccion = direccion.value
+                company.ciudad = ciudad.value
+                company.provincia = provincia.value
+                company.codigo_postal = codigo.value
+                company.email = email.value
+                company.telefono = telefono.value
+            
+                session.commit()
+                print('Datos actualizados')
+                
+                self.dialog.open = False
+                self.page.update()
+                self.fetch_companies()
+            except Exception as ex:
+                print(f'Error al actualizar: {ex}')
+                session.rollback()
+            finally:
+                session.close()    
+            
+        def delete_company(e):
+            print(f'Eliminando empresa: {company.nombre}')
+            try:
+                session.delete(company)
+                session.commit()
+                print('Empresa eliminada')
+                
+                self.dialog.open = False
+                self.page.update()
+                self.fetch_companies()
+            except Exception as ex:
+                print(f'Error al eliminar: {ex}')
+                session.rollback()
+            finally:
+                session.close()
+                            
         def close(e):
             self.dialog.open = False
             self.page.update()
-
-        def edit_company(e):
-            print(f'Editando empresa: {company.nombre}')
-            self.dialog.open = False
-            self.page.update()
-
-        def delete_company(e):
-            print(f'Eliminando empresa: {company.nombre}')
-            self.dialog.open = False
-            self.page.update()
-
-        self.dialog.title = ft.Text(f"Detalles de {company.nombre}")
+            
+        self.dialog.title = ft.Text(f'Editar {company.nombre}')
         self.dialog.content = ft.Column([
-            ft.Text(f'Nombre: {company.nombre}'),
-            ft.Text(f'CIF: {company.cif}'),
-            ft.Text(f'Dirección: {company.direccion}'),
-            ft.Text(f'Ciudad: {company.ciudad}'),
-            ft.Text(f'Provincia: {company.provincia}'),
-            ft.Text(f'Código Postal: {company.codigo_postal}'),
-            ft.Text(f'Email: {company.email}'),
-            ft.Text(f'Teléfono: {company.telefono}'),
-        ], tight=True)
-
+            nombre,
+            cif,
+            direccion,
+            ciudad,
+            provincia,
+            codigo,
+            email,
+            telefono
+        ],
+        tight=True)
+        
         self.dialog.actions = [
-            ft.TextButton('Editar', on_click=edit_company),
+            ft.TextButton('Guardar Cambios', on_click=edit_company),
             ft.TextButton('Eliminar', on_click=delete_company),
-            ft.TextButton('Cerrar', on_click=close),
+            ft.TextButton('Cerrar', on_click=close)
         ]
-
         self.page.dialog = self.dialog
         self.dialog.open = True
         self.page.update()
+
         print(f"Empresa seleccionada: {company.nombre}")
 
     def _close_dialog(self):
