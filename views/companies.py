@@ -17,10 +17,8 @@ class CompaniesView:
         )
 
     def build(self):
-        if not self.table:
-            self.table = self._build_companies_list()
-            
-        self._update_companies_list()
+        self._load_companies()
+        self.table = self._build_companies_list()
 
         self.page.views.clear()
         self.page.views.append(
@@ -51,39 +49,13 @@ class CompaniesView:
             )
         )
         self.page.update()
-
-    def _build_search_box(self):
-        return ft.Column(
-            controls=[
-                ft.TextField(
-                    label="Buscar empresa",
-                    hint_text="Nombre de la empresa",
-                    value=self.search_term,
-                    width=300,
-                    prefix_icon=ft.icons.SEARCH,
-                    on_change=self._filter_companies
-                ),
-            ],
-            alignment=ft.MainAxisAlignment.START,
-            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-            spacing=10,
-        )
-
-    def _filter_companies(self, e):
-        self.search_term = e.control.value
-        search_term = self.search_term.lower()
-        print(f'Filtrando empresas por: {search_term}')
-
-        if search_term:
-            self.filtered_companies = [
-                company for company in self.companies
-                if search_term in company.nombre.lower()
-            ]
-        else:
-            self.filtered_companies = self.companies
-
-        self._update_companies_list()
-
+        
+    def _load_companies(self):
+        db = SessionLocal()
+        self.companies = db.query(Empresas).all()
+        self.filtered_companies = self.companies
+        db.close()
+        
     def _build_companies_list(self):
         rows = [
             ft.DataRow(
@@ -107,14 +79,37 @@ class CompaniesView:
             rows=rows,
         )
 
+    def _build_search_box(self):
+        return ft.TextField(
+            label="Buscar empresa",
+            hint_text="Nombre de la empresa",
+            value=self.search_term,
+            width=300,
+            prefix_icon=ft.icons.SEARCH,
+            on_change=self._filter_companies
+        )
+
+    def _filter_companies(self, e):
+        self.search_term = e.control.value
+        search_term = self.search_term.lower()
+        print(f'Filtrando empresas por: {search_term}')
+
+        if search_term:
+            self.filtered_companies = [
+                company for company in self.companies
+                if search_term in company.nombre.lower()
+            ]
+        else:
+            self.filtered_companies = self.companies
+
+        # Actualizamos solo las filas
+        self._update_companies_list()
+
     def _update_companies_list(self):
-        print('Actualizando lista de empresas...')
-        if self.table is None:
-            self.table = self._build_companies_list()
-        
-        
-        self.table.rows = [
-            ft.DataRow(
+        """ Actualiza la lista de empresas sin reconstruir el DataTable """
+        self.table.rows.clear()
+        for company in self.filtered_companies:
+            row = ft.DataRow(
                 cells=[
                     ft.DataCell(ft.Text(company.nombre, max_lines=1, overflow='ellipsis'), on_tap=self._on_company_click, data=company),
                     ft.DataCell(ft.Text(company.cif, max_lines=1, overflow='ellipsis')),
@@ -122,106 +117,85 @@ class CompaniesView:
                     ft.DataCell(ft.Text(company.telefono, max_lines=1, overflow='ellipsis')),
                 ]
             )
-            for company in self.filtered_companies
-        ]
-        
-        if self.table not in self.page.controls:
-            self.page.controls.append(self.table)
-            
+            self.table.rows.append(row)
         self.page.update()
 
     def _on_company_click(self, e):
-        
+        """ Evento al hacer click en una empresa """
         company = e.control.data
-        print(f'Editando Empresa: {company.nombre}')
-        session = SessionLocal()
-        company = session.query(Empresas).filter(Empresas.id == company.id).first()
-        
-        if not company:
-            print('Empresa no encontrada')
-            session.close()
-            return
-        
-        # Form Editar datos
-        nombre = ft.TextField(label='Nombre', value=company.nombre)
-        cif = ft.TextField(label='Cif', value=company.cif)
-        direccion = ft.TextField(label='Dirección', value=company.direccion)
-        ciudad = ft.TextField(label='Ciudad', value=company.ciudad)
-        provincia = ft.TextField(label='Provincia', value=company.provincia)
-        codigo = ft.TextField(label='Código postal', value=company.codigo_postal)
-        email = ft.TextField(label='Email', value=company.email)
-        telefono = ft.TextField(label='Teléfono', value=company.telefono)
-        
-        def edit_company(e):
-            print(f'Actualizando datos empresa: {company.nombre}')
+        print(f'Visualizando Empresa: {company.nombre}')
+
+        # Modo solo lectura
+        form_fields = {
+            'nombre': ft.TextField(label="Nombre", value=company.nombre, disabled=True),
+            'cif': ft.TextField(label="CIF", value=company.cif, disabled=True),
+            'direccion': ft.TextField(label="Dirección", value=company.direccion, disabled=True),
+            'telefono': ft.TextField(label="Teléfono", value=company.telefono, disabled=True)
+        }
+
+        def edit_mode(e):
+            for field in form_fields.values():
+                field.disabled = False
+            edit_button.visible = False
+            save_button.visible = True
+            delete_button.visible = True
+            self.page.update()
+
+        def save_changes(e):
+            print(f'Guardando cambios para: {company.nombre}')
+            session = SessionLocal()
             try:
-                company.nombre = nombre.value
-                company.cif = cif.value
-                company.direccion = direccion.value
-                company.ciudad = ciudad.value
-                company.provincia = provincia.value
-                company.codigo_postal = codigo.value
-                company.email = email.value
-                company.telefono = telefono.value
-            
+                company.nombre = form_fields['nombre'].value
+                company.cif = form_fields['cif'].value
+                company.direccion = form_fields['direccion'].value
+                company.telefono = form_fields['telefono'].value
                 session.commit()
-                print('Datos actualizados')
-                
+                print('Datos actualizados correctamente')
                 self.dialog.open = False
-                self.page.update()
-                self.fetch_companies()
+                self._update_companies_list()
             except Exception as ex:
                 print(f'Error al actualizar: {ex}')
                 session.rollback()
             finally:
-                session.close()    
+                session.close()
+            self.page.update()
             
+        def close_dialog(e):
+            self.dialog.open = False
+            self.page.update()
+        
         def delete_company(e):
-            print(f'Eliminando empresa: {company.nombre}')
+            session = SessionLocal()
             try:
                 session.delete(company)
                 session.commit()
-                print('Empresa eliminada')
-                
+                print(f'Empresa {company.nombre} eliminada correctamente')
                 self.dialog.open = False
-                self.page.update()
-                self.fetch_companies()
+                self._update_companies_list()
             except Exception as ex:
                 print(f'Error al eliminar: {ex}')
                 session.rollback()
             finally:
                 session.close()
-                            
-        def close(e):
-            self.dialog.open = False
             self.page.update()
-            
-        self.dialog.title = ft.Text(f'Editar {company.nombre}')
-        self.dialog.content = ft.Column([
-            nombre,
-            cif,
-            direccion,
-            ciudad,
-            provincia,
-            codigo,
-            email,
-            telefono
-        ],
-        tight=True)
-        
+
+        # Botones centrados
+        edit_button = ft.IconButton(icon=ft.icons.EDIT, tooltip='Editar', on_click=edit_mode)
+        save_button = ft.IconButton(icon=ft.icons.SAVE, tooltip='Guardar', on_click=save_changes, visible=False)
+        delete_button = ft.IconButton(icon=ft.icons.DELETE, tooltip='Eliminar', on_click=delete_company, visible=False)
+        close_button = ft.IconButton(icon=ft.icons.CLOSE, tooltip='Cerrar', on_click=close_dialog)
+
+        self.dialog.title.value = f'Información de {company.nombre}'
+        self.dialog.content = ft.Column(list(form_fields.values()), tight=True)
         self.dialog.actions = [
-            ft.TextButton('Guardar Cambios', on_click=edit_company),
-            ft.TextButton('Eliminar', on_click=delete_company),
-            ft.TextButton('Cerrar', on_click=close)
+            ft.Row(
+                controls=[edit_button, save_button, delete_button, close_button],
+                alignment=ft.MainAxisAlignment.CENTER
+            )
         ]
+
         self.page.dialog = self.dialog
         self.dialog.open = True
-        self.page.update()
-
-        print(f"Empresa seleccionada: {company.nombre}")
-
-    def _close_dialog(self):
-        self.dialog.open = False
         self.page.update()
 
     def _build_bottom_appbar(self):
@@ -238,15 +212,4 @@ class CompaniesView:
                 ],
                 alignment=ft.MainAxisAlignment.SPACE_AROUND,
             )
-        )
-
-    def fetch_companies(self):
-        print("Cargando empresas desde la base de datos...")
-        session = SessionLocal()
-        try:
-            self.companies = session.query(Empresas).all()
-            print(f"Empresas cargadas: {self.companies}")
-            self.filtered_companies = self.companies
-            self.build()
-        finally:
-            session.close()
+    )

@@ -51,7 +51,7 @@ def main(page: ft.Page):
         elif page.route == '/register':
             RegisterView(page, theme_button, go_to_login).build()
         elif page.route == '/companies':
-            CompaniesView(page, theme_button).fetch_companies()
+            CompaniesView(page, theme_button).build()
         elif page.route == '/documents':
             DocumentsView(page, theme_button).build()
             
@@ -83,8 +83,8 @@ def main(page: ft.Page):
     def go_to_companies():
         print('Redirigiendo a la vista de empresas...')
         page.views.clear()
-        page.go(page.route)
-        CompaniesView(page, theme_button).build()
+        page.go('/companies')
+        
         
     def go_to_documents():
         print('Redirigiendo a la vista de documentos...')
