@@ -164,14 +164,20 @@ class CompaniesView:
             self.dialog.open = False
             self.page.update()
         
-        def delete_company(e):
+        def delete_company(e, company_id):
             session = SessionLocal()
             try:
-                session.delete(company)
-                session.commit()
-                print(f'Empresa {company.nombre} eliminada correctamente')
-                self.dialog.open = False
-                self._update_companies_list()
+                company = session.query(Empresas).filter(Empresas.id == company_id).first()
+                if company:
+                    session.delete(company)
+                    session.commit()
+                    print(f'Empresa {company.nombre} eliminada correctamente')
+                    
+                    self._load_companies()
+                    self._update_companies_list()
+                    self.dialog.open = False
+                else:
+                    print(f'Empresa con ID {company_id} no encontrada.')
             except Exception as ex:
                 print(f'Error al eliminar: {ex}')
                 session.rollback()
@@ -182,7 +188,7 @@ class CompaniesView:
         # Botones centrados
         edit_button = ft.IconButton(icon=ft.icons.EDIT, tooltip='Editar', on_click=edit_mode)
         save_button = ft.IconButton(icon=ft.icons.SAVE, tooltip='Guardar', on_click=save_changes, visible=False)
-        delete_button = ft.IconButton(icon=ft.icons.DELETE, tooltip='Eliminar', on_click=delete_company, visible=False)
+        delete_button = ft.IconButton(icon=ft.icons.DELETE, tooltip='Eliminar', on_click=lambda e: delete_company(e, company.id))
         close_button = ft.IconButton(icon=ft.icons.CLOSE, tooltip='Cerrar', on_click=close_dialog)
 
         self.dialog.title.value = f'Información de {company.nombre}'
