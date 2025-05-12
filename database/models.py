@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Float, Date
 from sqlalchemy.orm import relationship, sessionmaker
 from database.db import Base , SessionLocal
-
+from datetime import datetime
 class Usuario(Base):
     __tablename__ = 'usuarios'
 
@@ -53,8 +53,8 @@ class Documentos(Base):
     empresas_id_contratante = Column(Integer, ForeignKey('empresas.id'))
     lugar_origen = Column(String(200), nullable=False)
     lugar_destino = Column(String(200), nullable=False)
-    fecha_transporte = Column(Date, nullable=False) #Fecha realizacion del transporte
-    fecha_creacion = Column(DateTime) # Fecha de creacion del documento
+    fecha_transporte = Column(Date) #Fecha realizacion del transporte
+    fecha_creacion = Column(Date) # Fecha de creacion del documento
     matricula_vehiculo = Column(String(20), nullable=False)
     matricula_semiremolque = Column(String(20))
     naturaleza_carga = Column(String(200), nullable=False)

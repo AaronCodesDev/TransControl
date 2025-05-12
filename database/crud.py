@@ -82,7 +82,7 @@ def get_document_count(db: Session):
 
 # Obtener todas las rutas de transporte en una fecha específica
 def get_daily_routes(db: Session, fecha: str):
-    return db.query(Documentos).filter(Documentos.fecha_transporte == fecha).all()
+    return db.query(Documentos).filter(Documentos.fecha_creacion == fecha).all()
 
 ### CRUD PARA EMPRESAS ###
 

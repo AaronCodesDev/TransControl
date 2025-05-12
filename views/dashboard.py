@@ -1,5 +1,5 @@
 import flet as ft
-from datetime import datetime
+from datetime import date, datetime
 from database.models import Documentos, Empresas , Usuario
 from database.crud import get_document_count, get_daily_routes, get_company_count
 
@@ -9,8 +9,8 @@ class DashboardView:
         self.theme_button = theme_button
         self.user = page.user
         
-        self.total_routes = None
-        self.daily_routes = None
+        self.total_routes = get_document_count(self.page.db)
+        self.daily_routes = len(get_daily_routes(self.page.db, date.today()))
         self.company_count = get_company_count(self.page.db)
         
         self.welcome_card = self._build_welcome_card()
