@@ -17,6 +17,7 @@ class CompaniesView:
         )
 
     def build(self):
+        self.page.overlay.clear()
         self._load_companies()
         self.table = self._build_companies_list()
 

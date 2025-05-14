@@ -1,30 +1,29 @@
 import flet as ft
-from flet import Icons
 from views.login import LoginView
 from views.register import RegisterView
 from views.dashboard import DashboardView
 from views.companies import CompaniesView
 from views.documents import DocumentsView
-from database import SessionLocal, init_db
-from database.models import Usuario
 from views.profile import ProfileView
+from views.create_company import CreateCompanyView
+from database import SessionLocal, init_db
+
 
 def main(page: ft.Page):
-    # Configuración inicial de la página
     page.title = 'TransControl'
     page.theme_mode = ft.ThemeMode.LIGHT
-    page.padding = 20
+    page.padding = 0  # Eliminamos desplazamiento visual
     page.vertical_alignment = ft.MainAxisAlignment.CENTER
     page.scroll = 'auto'
 
     # Inicialización de la base de datos
     init_db()
-    page.db = SessionLocal()  # Sesión accesible desde cualquier vista
+    page.db = SessionLocal()
 
     theme_icon_button = ft.IconButton(
-        icon=Icons.DARK_MODE,
+        icon=ft.Icons.DARK_MODE,
         tooltip='Cambiar tema',
-        on_click=lambda e: toggle_theme(e)  # usamos lambda para pasar el evento
+        on_click=lambda e: toggle_theme(e)
     )
 
     def toggle_theme(e):
@@ -32,14 +31,12 @@ def main(page: ft.Page):
             ft.ThemeMode.DARK if page.theme_mode == ft.ThemeMode.LIGHT else ft.ThemeMode.LIGHT
         )
         theme_icon_button.icon = (
-            Icons.DARK_MODE if page.theme_mode == ft.ThemeMode.LIGHT else Icons.LIGHT_MODE
+            ft.Icons.DARK_MODE if page.theme_mode == ft.ThemeMode.LIGHT else ft.Icons.LIGHT_MODE
         )
         page.update()
 
-    # Este es el botón que se pasa a las vistas
     theme_button = theme_icon_button
 
-    # SISTEMA DE RUTAS
     def route_change(e):
         print(f'Ruta cambiada a: {page.route}')
         if page.route == '/dashboard':
@@ -54,10 +51,11 @@ def main(page: ft.Page):
             CompaniesView(page, theme_button).build()
         elif page.route == '/documents':
             DocumentsView(page, theme_button).build()
-            
+        elif page.route == '/create_company':
+            CreateCompanyView(page, theme_button).build()
+
     page.on_route_change = route_change
 
-    # Navegación
     def go_to_register():
         print('Redirigiendo a la vista de registro...')
         page.views.clear()
@@ -79,21 +77,19 @@ def main(page: ft.Page):
         print(f'Redirigiendo al Dashboard de: {page.user.nombre}')
         page.views.clear()
         DashboardView(page, theme_button).build()
-        
+
     def go_to_companies():
         print('Redirigiendo a la vista de empresas...')
         page.views.clear()
         page.go('/companies')
-        
-        
+
     def go_to_documents():
         print('Redirigiendo a la vista de documentos...')
         page.views.clear()
-        page.go('documents')
+        page.go('/documents')
 
-
-    # Comenzar mostrando la pantalla de login
     go_to_login()
+
 
 if __name__ == '__main__':
     ft.app(target=main, assets_dir="assets")

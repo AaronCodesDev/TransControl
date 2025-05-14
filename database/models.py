@@ -29,8 +29,7 @@ class Empresas(Base):
     telefono = Column(String(30))
     email = Column(String(100), unique=True, index=True)
     fecha_creacion = Column(DateTime)
-    tipo = Column(String(30)) # Ejemplo "Transportista", "Cargador", "Cliente"
-    
+        
     # Crear relaciones entre documentos y empresas
     documentos_como_transportista = relationship(
         'Documentos',

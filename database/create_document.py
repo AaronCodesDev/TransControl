@@ -9,7 +9,6 @@ matricula = fake.bothify(text='####-???')
 matricula_semi = fake.bothify(text='R-####-???')
 peso_int = int(fake.bothify(text='####'))
 fecha_transporte = datetime.strptime(fake.date(), '%Y-%m-%d').date()
-#fecha_creacion = datetime.strptime(fake.date(), '%Y-%m-%d').date()
 fecha_creacion = date.today()
 
     

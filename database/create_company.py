@@ -12,7 +12,7 @@ def create_db():
     engine = create_engine('sqlite:///database/transcontrol.db')
     Base.metadata.create_all(engine)
     
-def create_empresas():
+def create_company():
     engine = create_engine('sqlite:///database/transcontrol.db')
     Session = sessionmaker(bind=engine)
     session = Session()
@@ -26,16 +26,15 @@ def create_empresas():
                         telefono=faker.phone_number(),
                         email=faker.email(),
                         fecha_creacion= datetime.today().date(),
-                        tipo=faker.random.choice(tipo_empresa)
                         )
 
     session.add(empresa)
     session.commit()
     empresas = session.query(Empresas).all()
     for e in empresas:
-        print(f"{e.id} - {e.nombre} ({e.tipo})")
+        print(f"{e.id} - {e.nombre} ( {e.ciudad} )")
     session.close()
 
 if __name__ == "__main__":
     create_db()
-    create_empresas()
+    create_company()
