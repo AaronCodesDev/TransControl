@@ -1,17 +1,17 @@
 # 📦 TransControl
 
 **TransControl** es una aplicación desarrollada en Python para gestionar hojas de control de transporte de mercancías.  
-Permite almacenar, consultar y organizar información de rutas, transportistas y empresas de manera eficiente.
+Permite almacenar, consultar y organizar información de rutas y empresas de manera eficiente.
 
 ---
 
 ## 🚀 Características principales
 
-- Registro de transportistas, rutas y empresas.
+- Registro de rutas y empresas.
 - Almacenamiento de datos en base de datos local (`SQLite`).
 - Interfaz gráfica desarrollada con [Flet](https://flet.dev/).
-- Organización de documentos y control de operaciones diarias.
-- Entorno preparado para ser ampliado a versiones Web y Mobile.
+- Organización de documentos y control de diario y total de operaciones.
+- Preparado para ser ampliado a versiones Web y Mobile.
 
 ---
 
@@ -22,13 +22,16 @@ Permite almacenar, consultar y organizar información de rutas, transportistas y
 ```
 TransControl/
 ├── assets/              # Archivos estáticos (imágenes, iconos, etc.)
-├── database/            # Scripts de base de datos y modelos
-├── storage/             # Documentos o archivos de usuarios
-├── utils/               # Utilidades como hashing de contraseñas
-├── views/               # Vistas principales de la aplicación
+├── database/            # Modelos y conexión a la base de datos
+├── storage/             # Documentos o archivos generados por usuarios
+├── tests/               # Scripts de pruebas(reset, creación de datos, etc.)
+├── test_files/          # Archivos de prueba para testeo manual
+├── utils/               # Funciones Auxiliares(hashing, validaciones, etc.)
+├── views/               # Vistas principales de la interfaz
+├── credentials.json     # Archivo de credenciales
 ├── main.py              # Punto de entrada de la aplicación
-├── requirements.txt     # Dependencias del proyecto
-└── .gitignore           # Archivos y carpetas ignorados por Git
+├── requirements.txt     # Lista de dependencias del proyecto
+└── .gitignore           # Exclusiones para Git
 ```
 
 ---
@@ -38,15 +41,11 @@ TransControl/
 - Python 3.10 o superior
 - Librerías listadas en `requirements.txt`
 
-Crear Venv
+Crear y activar entorno virtual
 
 ```bash
 python3 -m venv venv
-```
-Entrar en Entorno virtual
-
-```bash
-source venv/bin/activate      
+source venv/bin/activate   # En Windows: venv\Scipts\activate   
 ```
 
 Instalar las dependencias:
@@ -59,18 +58,40 @@ pip install -r requirements.txt
 
 ## 🛠️ Cómo ejecutar
 
-Para crear la base datos para pruebas
+Para crear/resetear la base datos para pruebas
 ```bash
-python3 database/reset_db.py
+python -m tests.reset_db
 ```
 
-Dentro de la carpeta del proyecto:
-
+Crear empresas en la base datos para pruebas
 ```bash
-python main.py o flet main.py
+python -m tests.create_company # Empresas
+python -m tests.create_document # Documentos
+python -m tests.create_user # usuarios
 ```
 
+Ejecutar la app
+
+```bash
+python main.py
+# o usando flet 
+flet main.py
+```
+Para vista movil:
+
+```bash
+python main.py --ios # Para iOS 
+flet main.py --android # Para Android 
+```
 ---
+
+# ✅ ¿Cómo usarlo?
+- Clona el repositorio.
+```bash
+git clone https://github.com/AaronCodesDev/TransControl.git
+```
+- Instala las dependencias.
+- Ejecuta `main.py` o `flet main.py` para iniciar la aplicación.
 
 ## 📄 Licencia
 
@@ -84,9 +105,3 @@ Puedes usarlo, modificarlo y distribuirlo libremente.
 🚧 Proyecto en desarrollo — Se están implementando nuevas funcionalidades y mejoras de interfaz.
 
 ---
-
-# ✅ ¿Cómo usarlo?
-- Clona el repositorio.
-- Instala las dependencias.
-- Ejecuta `main.py` para iniciar la aplicación.
-
