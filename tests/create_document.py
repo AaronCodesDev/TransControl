@@ -1,4 +1,4 @@
-from .models import Base, Documentos, Usuario, Empresas
+from database.models import Base, Documentos, Usuario, Empresas
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 from faker import Faker

@@ -3,6 +3,7 @@ from datetime import date
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 from database.models import Empresas
+import asyncio
 
 class CreateCompanyView:
     def __init__(self, page: ft.Page, theme_button):
@@ -62,7 +63,7 @@ class CreateCompanyView:
         )
         self.page.update()
 
-    def save_company(self, e):
+    async def save_company(self, e):
         if not all([
             self.nombre.value.strip(),
             self.direccion.value.strip(),
@@ -103,6 +104,9 @@ class CreateCompanyView:
             self.mensaje.color = ft.Colors.GREEN
             self.mensaje.visible = True
             self.page.update()
+            
+            await asyncio.sleep(1)
+            await self.page.go('/companies')
 
         except Exception as err:
             self.mensaje.value = f"❌ Error: {err}"

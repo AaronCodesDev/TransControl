@@ -1,4 +1,4 @@
-from .models import Empresas, Base
+from database.models import Empresas, Base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 from datetime import datetime

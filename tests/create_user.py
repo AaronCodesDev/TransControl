@@ -1,4 +1,4 @@
-from .models import Usuario, Base
+from database.models import Usuario, Base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 from datetime import datetime
