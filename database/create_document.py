@@ -27,7 +27,7 @@ def create_documents():
     # Creacion de documentos fake
     document = Documentos(
             usuarios_id = usuario.id,
-            nombre = empresa.nombre,
+            empresas_nombres = empresa.nombre,
             empresas_id_transportista = empresa.id,
             empresas_id_contratante = empresa.id,
             lugar_origen = fake.city(),
@@ -48,7 +48,7 @@ def create_documents():
     #Mostrar Docs generado
     documents = session.query(Documentos).all()
     for e in documents:
-        print(f"{e.id} - Carga de {e.empresas_id_contratante} - {e.lugar_origen} para {e.lugar_destino} con el peso ({e.peso} Kg.)")
+        print(f"{e.id} - Carga de {e.empresas_nombres} {e.empresas_id_contratante} - {e.lugar_origen} para {e.lugar_destino} con el peso ({e.peso} Kg.)")
     session.close()
 
 if __name__ == "__main__":

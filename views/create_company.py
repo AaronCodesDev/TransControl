@@ -6,9 +6,10 @@ from database.models import Empresas
 import asyncio
 
 class CreateCompanyView:
-    def __init__(self, page: ft.Page, theme_button):
+    def __init__(self, page: ft.Page, theme_button, force_route):
         self.page = page
         self.theme_button = theme_button
+        self.force_route = force_route
 
     def build(self):
         # Inputs
@@ -19,49 +20,45 @@ class CreateCompanyView:
         self.provincia = ft.TextField(label='Provincia')
         self.cif = ft.TextField(label='CIF')
         self.telefono = ft.TextField(label='Teléfono')
-        self.mensaje = ft.Text(value="", visible=False)
+        self.message = ft.Text(value="", visible=False)
 
-        # Layout
-        self.page.views.clear()
-        self.page.views.append(
-            ft.View(
-                "/create_company",
-                controls=[
-                    ft.AppBar(
-                        title=ft.Text("Registrar Empresa"),
-                        bgcolor=ft.colors.GREEN_300,
-                        center_title=True,
-                        actions=[self.theme_button]
+        # Retornar la vista
+        return ft.View(
+            "/create_company",
+            controls=[
+                ft.AppBar(
+                    title=ft.Text("Registrar Empresa"),
+                    bgcolor=ft.colors.GREEN_300,
+                    center_title=True,
+                    actions=[self.theme_button]
+                ),
+                ft.Container(
+                    content=ft.Column(
+                        controls=[
+                            self.nombre,
+                            self.direccion,
+                            self.codigo_postal,
+                            self.ciudad,
+                            self.provincia,
+                            self.cif,
+                            self.telefono,
+                            self.message,
+                            ft.Row(
+                                controls=[
+                                    ft.ElevatedButton("Guardar", on_click=self.save_company),
+                                    ft.OutlinedButton("Cancelar", on_click=lambda e: self.force_route("/dashboard")),
+                                ],
+                                alignment=ft.MainAxisAlignment.CENTER
+                            )
+                        ],
+                        tight=True,
+                        scroll=ft.ScrollMode.AUTO
                     ),
-                    ft.Container(
-                        content=ft.Column(
-                            controls=[
-                                self.nombre,
-                                self.direccion,
-                                self.codigo_postal,
-                                self.ciudad,
-                                self.provincia,
-                                self.cif,
-                                self.telefono,
-                                self.mensaje,
-                                ft.Row(
-                                    controls=[
-                                        ft.ElevatedButton("Guardar", on_click=self.save_company),
-                                        ft.OutlinedButton("Cancelar", on_click=lambda e: self.page.go("/dashboard"))
-                                    ],
-                                    alignment=ft.MainAxisAlignment.CENTER
-                                )
-                            ],
-                            tight=True,
-                            scroll=ft.ScrollMode.AUTO
-                        ),
-                        padding=30,
-                        alignment=ft.alignment.top_center
-                    )
-                ]
-            )
+                    padding=30,
+                    alignment=ft.alignment.top_center
+                )
+            ]
         )
-        self.page.update()
 
     async def save_company(self, e):
         if not all([
@@ -73,9 +70,9 @@ class CreateCompanyView:
             self.cif.value.strip(),
             self.telefono.value.strip()
         ]):
-            self.mensaje.value = "⚠️ Todos los campos son obligatorios."
-            self.mensaje.color = ft.colors.RED
-            self.mensaje.visible = True
+            self.message.value = "⚠️ Todos los campos son obligatorios."
+            self.message.color = ft.colors.RED
+            self.message.visible = True
             self.page.update()
             return 
         
@@ -97,19 +94,19 @@ class CreateCompanyView:
 
             session.add(new_company)
             session.commit()
-            new_company = new_company.nombre
+            company_name = new_company.nombre
             session.close()
 
-            self.mensaje.value = f"✅ Empresa '{new_company}' guardada"
-            self.mensaje.color = ft.Colors.GREEN
-            self.mensaje.visible = True
+            self.message.value = f"✅ Empresa '{company_name}' guardada"
+            self.message.color = ft.colors.GREEN
+            self.message.visible = True
             self.page.update()
             
             await asyncio.sleep(1)
             await self.page.go('/companies')
 
         except Exception as err:
-            self.mensaje.value = f"❌ Error: {err}"
-            self.mensaje.color = ft.colors.RED
-            self.mensaje.visible = True
+            self.message.value = f"❌ Error: {err}"
+            self.message.color = ft.colors.RED
+            self.message.visible = True
             self.page.update()

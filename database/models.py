@@ -20,7 +20,7 @@ class Empresas(Base):
     __tablename__ = 'empresas'
 
     id = Column(Integer, primary_key=True, index=True)
-    nombre = Column(String(100), index=True)
+    nombre = Column(String(100), nullable=True)
     direccion = Column(String(200))
     codigo_postal = Column(String(20))
     ciudad = Column(String(50))
@@ -47,6 +47,7 @@ class Documentos(Base):
     __tablename__ = 'documentos_control'
 
     id = Column(Integer, primary_key=True, index=True)
+    nombre = Column(String, nullable=True)
     usuarios_id = Column(Integer, ForeignKey('usuarios.id'))
     empresas_id_transportista = Column(Integer, ForeignKey('empresas.id'))
     empresas_id_contratante = Column(Integer, ForeignKey('empresas.id'))

@@ -8,7 +8,7 @@ class LoginView:
         self.on_login_success = on_login_success
         self.theme_button = theme_button
         self.go_to_register = go_to_register
-        
+
         guardado = load_credentials()
 
         # Campos
@@ -39,7 +39,7 @@ class LoginView:
         self.error_text.visible = False
         self.message_text.visible = False
         self.page.update()
-    
+
     def build(self):
         def login(e):
             login_btn.disabled = True
@@ -86,45 +86,37 @@ class LoginView:
         login_btn = ft.ElevatedButton('Iniciar Sesión', on_click=login)
 
         logo_patch = 'logo_dark.png' if self.page.theme_mode == ft.ThemeMode.DARK else 'logo_light.png'
-        logo = ft.Image(
-            src=logo_patch,
-            width=150,
-            height=150,
-        )
+        logo = ft.Image(src=logo_patch, width=150, height=150)
 
-        self.page.views.clear()
-        self.page.views.append(
-            ft.View(
-                '/login',
-                controls=[
-                    ft.Column(
-                        controls=[
-                            ft.Container(
-                                content=ft.Row([self.theme_button], alignment=ft.MainAxisAlignment.END),
-                                margin=ft.margin.only(top=30)  # Añadimos el margen superior aquí
-                            ),
-                            logo,
-                            ft.Text('Iniciar Sesión', size=30, weight='bold'),
-                            self.email,
-                            self.password,
-                            self.remember_me,
-                            login_btn,
-                            self.error_text,
-                            self.message_text,
-                            ft.TextButton(
-                                "❌ Olvidar datos recordados",
-                                on_click=lambda e: (clear_credentials(), self.reset_fields())
-                            ),
-                            ft.TextButton(
-                                "¿No tienes cuenta? Regístrate",
-                                on_click=lambda e: self.go_to_register()
-                            ),
-                        ],
-                        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                        alignment=ft.MainAxisAlignment.CENTER,
-                        spacing=10,
-                    ),
-                ]
-            )
+        return ft.View(
+            route='/login',
+            controls=[
+                ft.Column(
+                    controls=[
+                        ft.Container(
+                            content=ft.Row([self.theme_button], alignment=ft.MainAxisAlignment.END),
+                            margin=ft.margin.only(top=30)
+                        ),
+                        logo,
+                        ft.Text('Iniciar Sesión', size=30, weight='bold'),
+                        self.email,
+                        self.password,
+                        self.remember_me,
+                        login_btn,
+                        self.error_text,
+                        self.message_text,
+                        ft.TextButton(
+                            "❌ Olvidar datos recordados",
+                            on_click=lambda e: (clear_credentials(), self.reset_fields())
+                        ),
+                        ft.TextButton(
+                            "¿No tienes cuenta? Regístrate",
+                            on_click=lambda e: self.go_to_register()
+                        ),
+                    ],
+                    horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                    alignment=ft.MainAxisAlignment.CENTER,
+                    spacing=10,
+                ),
+            ]
         )
-        self.page.update()

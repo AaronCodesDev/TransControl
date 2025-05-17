@@ -7,33 +7,29 @@ class ProfileView:
         self.user = page.user
 
     def build(self):
-        self.page.views.clear()
-        self.page.views.append(
-            ft.View(
-                '/profile',
-                controls=[
-                    ft.Column(
-                        controls=[
-                            ft.Row(alignment=ft.MainAxisAlignment.END),
-                            self._build_profile_card(),
-                        ],
-                        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                        alignment=ft.MainAxisAlignment.CENTER,
-                        spacing=30
-                    )
-                ],
-                appbar=ft.AppBar(
-                    title=ft.Text(f'Perfil - {self.user.nombre}'),
-                    center_title=True,
-                    bgcolor=ft.colors.GREEN_300,
-                    automatically_imply_leading=False,
-                    actions=[self.theme_button],
-                ),
-                bottom_appbar=self._build_bottom_appbar()  # 🔥 Añadido correctamente
-            )
+        return ft.View(
+            route='/profile',
+            controls=[
+                ft.Column(
+                    controls=[
+                        ft.Row(alignment=ft.MainAxisAlignment.END),
+                        self._build_profile_card(),
+                    ],
+                    horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                    alignment=ft.MainAxisAlignment.CENTER,
+                    spacing=30
+                )
+            ],
+            appbar=ft.AppBar(
+                title=ft.Text(f'Perfil - {self.user.nombre}'),
+                center_title=True,
+                bgcolor=ft.colors.GREEN_300,
+                automatically_imply_leading=False,
+                actions=[self.theme_button],
+            ),
+            bottom_appbar=self._build_bottom_appbar()
         )
-        self.page.update()
-        
+
     def _build_profile_card(self):
         return ft.Card(
             elevation=8,

@@ -6,7 +6,6 @@ from faker import Faker
 import random
 
 faker = Faker('es_ES')
-tipo_empresa = ['Transportista', 'Cargador', 'Cliente']
 
 def create_db():
     engine = create_engine('sqlite:///database/transcontrol.db')

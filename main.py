@@ -6,20 +6,22 @@ from views.companies import CompaniesView
 from views.documents import DocumentsView
 from views.profile import ProfileView
 from views.create_company import CreateCompanyView
+from views.create_document import CreateDocumentView
 from database import SessionLocal, init_db
 
 
 def main(page: ft.Page):
     page.title = 'TransControl'
     page.theme_mode = ft.ThemeMode.LIGHT
-    page.padding = 0  # Eliminamos desplazamiento visual
+    page.padding = 0
     page.vertical_alignment = ft.MainAxisAlignment.CENTER
     page.scroll = 'auto'
 
-    # Inicialización de la base de datos
+    # Inicializar base de datos
     init_db()
     page.db = SessionLocal()
 
+    # Botón para cambiar tema
     theme_icon_button = ft.IconButton(
         icon=ft.Icons.DARK_MODE,
         tooltip='Cambiar tema',
@@ -37,58 +39,81 @@ def main(page: ft.Page):
 
     theme_button = theme_icon_button
 
+    # Forzar recarga de una vista si ya estás en la ruta
+    def force_route(route):
+        if page.route == route:
+            route_change(None)
+        else:
+            page.go(route)
+
     def route_change(e):
-        print(f'Ruta cambiada a: {page.route}')
+        print(f'📍 Ruta cambiada a: {page.route}')
+        page.views.clear()
+
         if page.route == '/dashboard':
-            DashboardView(page, theme_button).build()
+            view = DashboardView(page, theme_button, force_route)
+            page.views.append(view.build())
+
         elif page.route == '/profile':
-            ProfileView(page, theme_button).build()
+            view = ProfileView(page, theme_button)
+            page.views.append(view.build())
+
         elif page.route == '/login':
-            LoginView(page, on_login_success, theme_button, go_to_register).build()
+            view = LoginView(page, on_login_success, theme_button, go_to_register)
+            page.views.append(view.build())
+
         elif page.route == '/register':
-            RegisterView(page, theme_button, go_to_login).build()
+            view = RegisterView(page, theme_button, go_to_login)
+            page.views.append(view.build())
+
         elif page.route == '/companies':
-            CompaniesView(page, theme_button).build()
+            view = CompaniesView(page, theme_button)
+            page.views.append(view.build())
+
         elif page.route == '/documents':
-            DocumentsView(page, theme_button).build()
+            view = DocumentsView(page, theme_button)
+            page.views.append(view.build())
+
         elif page.route == '/create_company':
-            CreateCompanyView(page, theme_button).build()
+            view = CreateCompanyView(page, theme_button, force_route)
+            page.views.append(view.build())
+
+        elif page.route == '/create_document':
+            view = CreateDocumentView(page, theme_button, force_route)
+            page.views.append(view.build())
+
+        page.update()
 
     page.on_route_change = route_change
 
+    # Funciones de navegación reutilizables
     def go_to_register():
-        print('Redirigiendo a la vista de registro...')
-        page.views.clear()
-        RegisterView(page, theme_button, go_to_login).build()
-        page.update()
+        print('➡️ Registro')
+        force_route("/register")
 
     def on_login_success(user):
-        print(f'Login exitoso con usuario: {user}')
+        print(f'✅ Login con: {user}')
         page.user = user
-        go_to_dashboard()
+        force_route("/dashboard")
 
     def go_to_login():
-        print('Redirigiendo a la vista de login...')
-        page.views.clear()
-        page.go(page.route)
-        LoginView(page, on_login_success, theme_button, go_to_register).build()
+        print('➡️ Login')
+        force_route("/login")
 
     def go_to_dashboard():
-        print(f'Redirigiendo al Dashboard de: {page.user.nombre}')
-        page.views.clear()
-        DashboardView(page, theme_button).build()
+        print(f'↩️ Dashboard: {page.user.nombre}')
+        force_route("/dashboard")
 
     def go_to_companies():
-        print('Redirigiendo a la vista de empresas...')
-        page.views.clear()
-        page.go('/companies')
+        print('➡️ Empresas')
+        force_route("/companies")
 
     def go_to_documents():
-        print('Redirigiendo a la vista de documentos...')
-        page.views.clear()
-        page.go('/documents')
+        print('➡️ Documentos')
+        force_route("/documents")
 
-    go_to_login()
+    # Iniciar en login
+    force_route("/login")
 
 
 if __name__ == '__main__':
