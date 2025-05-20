@@ -47,7 +47,6 @@ class Documentos(Base):
     __tablename__ = 'documentos_control'
 
     id = Column(Integer, primary_key=True, index=True)
-    nombre = Column(String, nullable=True)
     usuarios_id = Column(Integer, ForeignKey('usuarios.id'))
     empresas_id_transportista = Column(Integer, ForeignKey('empresas.id'))
     empresas_id_contratante = Column(Integer, ForeignKey('empresas.id'))

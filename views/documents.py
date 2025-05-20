@@ -1,5 +1,7 @@
 import flet as ft
 from database.models import SessionLocal, Documentos
+from sqlalchemy.orm import joinedload
+from sqlalchemy import desc
 
 class DocumentsView:
     def __init__(self, page: ft.Page, theme_button):
@@ -48,7 +50,11 @@ class DocumentsView:
 
     def _load_documents(self):
         db = SessionLocal()
-        self.documents = db.query(Documentos).all()
+        self.documents = db.query(Documentos).options(
+            joinedload(Documentos.contratante),
+            joinedload(Documentos.transportista),
+            joinedload(Documentos.usuario)
+        ).order_by(desc(Documentos.fecha_transporte)).all()
         self.filtered_documents = self.documents
         db.close()
 
@@ -58,37 +64,40 @@ class DocumentsView:
                 cells=[
                     ft.DataCell(
                         ft.Container(
-                            content=ft.Text(doc.fecha_creacion, size=12, overflow="ellipsis"),
-                            width=100
+                            content=ft.Text(doc.contratante.nombre if doc.contratante else 'sin asignar', size=14, overflow="ellipsis", max_lines=1, no_wrap=True, text_align=ft.TextAlign.CENTER),
+                            width=60,
+                            alignment=ft.alignment.center_left
                         )
                     ),
                     ft.DataCell(
                         ft.Container(
-                            content=ft.Text(doc.lugar_origen, size=12, overflow="ellipsis"),
-                            width=100
+                            content=ft.Text(doc.lugar_origen, size=14, overflow="ellipsis", text_align=ft.TextAlign.CENTER),
+                            width=70,
+                            alignment=ft.alignment.center_left
                         )
                     ),
                     ft.DataCell(
                         ft.Container(
-                            content=ft.Text(doc.lugar_destino, size=12, overflow="ellipsis"),
-                            width=100
+                            content=ft.Text(doc.lugar_destino, size=14, overflow="ellipsis", text_align=ft.TextAlign.CENTER),
+                            width=70,
+                            alignment=ft.alignment.center_left
                         )
                     ),
                     ft.DataCell(
                         ft.Container(
                             content=ft.Row(
                                 controls=[
-                                    ft.Text(str(doc.peso), size=12),
                                     ft.IconButton(
                                         icon=ft.icons.QR_CODE,
                                         tooltip='Ver QR del documento',
                                         on_click=lambda e, d=doc: self.mostrar_qr(e, d),
                                         icon_size=20,
+                                        alignment=ft.alignment.center_left
                                     )
                                 ],
                                 spacing=5
                             ),
-                            width=100
+                            width=70
                         )
                     ),
                 ]
@@ -96,16 +105,26 @@ class DocumentsView:
             for doc in self.filtered_documents
         ]
 
-        return ft.DataTable(
-            columns=[
-                ft.DataColumn(label=ft.Text('Contratante', size=12)),
-                ft.DataColumn(label=ft.Text('Origen', size=12)),
-                ft.DataColumn(label=ft.Text('Destino', size=12)),
-                ft.DataColumn(label=ft.Text('QR / Peso', size=12)),
+        return ft.Row(
+            controls=[
+                ft.Container(
+                    content=ft.DataTable(
+                        columns=[
+                            ft.DataColumn(ft.Text("Contratante")),
+                            ft.DataColumn(ft.Text("Origen")),
+                            ft.DataColumn(ft.Text("Destino")),
+                            ft.DataColumn(ft.Text("  QR")),
+                        ],
+                        rows=rows,
+                        column_spacing=20,
+                        data_row_max_height=56
+                    ),
+                    padding=10            
+                )       
             ],
-            rows=rows
-        )
-
+            scroll=True,
+            expand=True
+        )    
     def _build_search_box(self):
         return ft.TextField(
             label='Buscar Contratante',
@@ -125,6 +144,7 @@ class DocumentsView:
             if term in str(d.empresas_id_contratante).lower()
             or term in d.lugar_origen.lower()
             or term in d.lugar_destino.lower()
+            or term in d.nombre.lower()
         ] if term else self.documents
 
         self.table.rows.clear()

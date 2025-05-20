@@ -20,6 +20,7 @@ class CreateCompanyView:
         self.provincia = ft.TextField(label='Provincia')
         self.cif = ft.TextField(label='CIF')
         self.telefono = ft.TextField(label='Teléfono')
+        self.email = ft.TextField(label='Email', keyboard_type=ft.KeyboardType.EMAIL)
         self.message = ft.Text(value="", visible=False)
 
         # Retornar la vista
@@ -42,6 +43,7 @@ class CreateCompanyView:
                             self.provincia,
                             self.cif,
                             self.telefono,
+                            self.email,
                             self.message,
                             ft.Row(
                                 controls=[
@@ -68,7 +70,8 @@ class CreateCompanyView:
             self.ciudad.value.strip(),
             self.provincia.value.strip(),
             self.cif.value.strip(),
-            self.telefono.value.strip()
+            self.telefono.value.strip(),
+            self.email.value.strip()
         ]):
             self.message.value = "⚠️ Todos los campos son obligatorios."
             self.message.color = ft.colors.RED
@@ -89,6 +92,7 @@ class CreateCompanyView:
                 provincia=self.provincia.value.strip(),
                 cif=self.cif.value.strip(),
                 telefono=self.telefono.value.strip(),
+                email=self.email.value.strip(),
                 fecha_creacion=date.today()
             )
 

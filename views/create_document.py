@@ -3,6 +3,7 @@ from datetime import date
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 from database.models import Documentos, Empresas, Usuario
+import asyncio
 
 class CreateDocumentView:
     def __init__(self, page, theme_button, force_route):
@@ -11,9 +12,14 @@ class CreateDocumentView:
         self.force_route = force_route
 
     def build(self):
+        self._load_empresas()
+        
+        self.empresas_dropdown = ft.Dropdown(label='Selecciona Empresa Contratante', options=[ft.dropdown.Option(str(e.id), e.nombre) for e in self.empresas], width=300)
         self.origen_input = ft.TextField(label='Lugar de origen')
         self.destino_input = ft.TextField(label="Lugar de destino")
         self.matricula_input = ft.TextField(label='Matrícula')
+        self.matricula_remolque_input = ft.TextField(label='Matrícula Semiremolque')
+        self.naturaleza_input = ft.TextField(label='Naturaleza Carga')
         self.peso_input = ft.TextField(label='Peso en Kg')
         self.message = ft.Text(value='', visible=False)
 
@@ -24,9 +30,12 @@ class CreateDocumentView:
                 ft.Container(
                     content=ft.Column(
                         controls=[
+                            self.empresas_dropdown,
                             self.origen_input,
                             self.destino_input,
                             self.matricula_input,
+                            self.matricula_remolque_input,
+                            self.naturaleza_input,
                             self.peso_input,
                             ft.Row(
                                 controls=[
@@ -47,8 +56,15 @@ class CreateDocumentView:
             ],
             scroll=ft.ScrollMode.AUTO
         )
+        
+    def _load_empresas(self):
+        engine = create_engine('sqlite:///database/transcontrol.db')
+        Session = sessionmaker(bind=engine)
+        session = Session()
+        self.empresas = session.query(Empresas).all()
+        session.close()
 
-    def save_document(self, e):
+    async def save_document(self, e):
         try:
             engine = create_engine('sqlite:///database/transcontrol.db')
             Session = sessionmaker(bind=engine)
@@ -77,6 +93,9 @@ class CreateDocumentView:
             session.commit()
             self.message.value = '✅ Documento creado correctamente'
             self.message.visible = True
+
+            await asyncio.sleep(1)
+            await self.page.go('/documents')
 
         except Exception as err:
             self.message.value = f'❌ Error: {err}'
