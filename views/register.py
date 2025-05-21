@@ -12,7 +12,6 @@ class RegisterView:
         self.go_to_login = go_to_login
         
         # Campos del formulario
-        self.username = ft.TextField(label='Nombre de usuario')
         self.nif = ft.TextField(label='NIF', hint_text='Ej: 12345678A')
         self.name = ft.TextField(label='Nombre', autofocus=True)
         self.apellido = ft.TextField(label='Apellido')
@@ -38,9 +37,7 @@ class RegisterView:
         )
 
     def build(self):
-        self.page.views.clear()
-        self.page.views.append(
-            ft.View(
+        return ft.View(
                 "/register",
                 controls=[
                     ft.Column(
@@ -48,10 +45,9 @@ class RegisterView:
                             ft.Row([self.theme_button], alignment=ft.MainAxisAlignment.END),
                             self.logo,
                             ft.Text("Registro de usuario", size=28, weight="bold"),
-                            self.username,
-                            self.nif,
                             self.name,
                             self.apellido,
+                            self.nif,
                             self.email,
                             self.password,
                             self.confirm_password,
@@ -68,7 +64,6 @@ class RegisterView:
                     )
                 ]
             )
-        )
 
     def register(self, e):
         # Resetear mensajes
@@ -76,7 +71,7 @@ class RegisterView:
         self.success_text.visible = False
         
         # Validaciones básicas
-        if not all([self.username.value, self.nif.value, self.name.value, 
+        if not all([self.nif.value, self.name.value, 
                    self.email.value, self.password.value]):
             self.show_error('Por favor completa todos los campos')
             return
@@ -98,10 +93,9 @@ class RegisterView:
         try:
             hashed_password = hash_password(self.password.value)
             new_user = Usuario(
-                usuario=self.username.value,
-                nif=self.nif.value,
                 nombre=self.name.value,
                 apellido=self.apellido.value,
+                nif=self.nif.value,
                 email=self.email.value,
                 contrasena=hashed_password,
                 fecha_creacion=datetime.now(),
@@ -123,7 +117,6 @@ class RegisterView:
     def user_exists(self):
         """Verifica si el usuario o NIF ya existen"""
         return self.page.db.query(Usuario).filter(
-            (Usuario.usuario == self.username.value) | 
             (Usuario.nif == self.nif.value) |
             (Usuario.email == self.email.value)
         ).first() is not None
