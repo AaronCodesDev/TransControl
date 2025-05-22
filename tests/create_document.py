@@ -23,11 +23,14 @@ def create_documents():
     
     usuario = session.query(Usuario).first()
     empresa = session.query(Empresas).first()
+    
+    if not usuario or not empresa:
+        print("No hay usuarios o empresas en la base de datos.")
+        return
 
     # Creacion de documentos fake
     document = Documentos(
             usuarios_id = usuario.id,
-            nombre = empresa.nombre,
             empresas_id_transportista = empresa.id,
             empresas_id_contratante = empresa.id,
             lugar_origen = fake.city(),

@@ -2,7 +2,6 @@ import flet as ft
 from database.models import Usuario
 from datetime import datetime
 from utils.security import hash_password  
-
 import bcrypt
 
 class RegisterView:
@@ -10,6 +9,11 @@ class RegisterView:
         self.page = page
         self.theme_button = theme_button
         self.go_to_login = go_to_login
+        self.logo = ft.Image(
+            src='assets/logo_light.png',
+            width=150,
+            height=150,
+            )
         
         # Campos del formulario
         self.nif = ft.TextField(label='NIF', hint_text='Ej: 12345678A')
@@ -30,20 +34,20 @@ class RegisterView:
         # Elementos UI
         self.error_text = ft.Text('', color=ft.colors.RED, size=12, visible=False)
         self.success_text = ft.Text('', color=ft.colors.GREEN, size=12, visible=False)
-        self.logo = ft.Image(
-            src='assets/logo_dark.png' if page.theme_mode == ft.ThemeMode.DARK else 'assets/logo_light.png',
-            width=150,
-            height=150,
-        )
+        
 
     def build(self):
+        logo_patch = 'assets/logo_dark.png' if self.page.theme_mode == ft.ThemeMode.DARK else 'logo_light.png'
+        logo = ft.Image(src=logo_patch, width=150, height=150)
+
+
         return ft.View(
                 "/register",
                 controls=[
                     ft.Column(
                         controls=[
                             ft.Row([self.theme_button], alignment=ft.MainAxisAlignment.END),
-                            self.logo,
+                            logo,
                             ft.Text("Registro de usuario", size=28, weight="bold"),
                             self.name,
                             self.apellido,
@@ -133,5 +137,5 @@ class RegisterView:
 
     def update_theme(self):
         """Actualiza el logo cuando cambia el tema"""
-        self.logo.src = 'assets/logo_dark.png' if self.page.theme_mode == ft.ThemeMode.DARK else 'assets/logo_light.png'
+        self.logo.src = ('assets/logo_dark.png' if self.page.theme_mode == ft.ThemeMode.DARK else 'assets/logo_light.png')
         self.page.update()

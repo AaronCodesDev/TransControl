@@ -13,7 +13,6 @@ class CreateDocumentView:
 
     def build(self):
         self._load_empresas()
-        
         self.empresas_dropdown = ft.Dropdown(label='Selecciona Empresa Contratante', options=[ft.dropdown.Option(str(e.id), e.nombre) for e in self.empresas], width=300)
         self.origen_input = ft.TextField(label='Lugar de origen')
         self.destino_input = ft.TextField(label="Lugar de destino")

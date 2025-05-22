@@ -45,6 +45,8 @@ class ProfileView:
                         ft.Text(f'Apellido: {self.user.apellido}', size=16, italic=True, color=ft.colors.GREY),
                         ft.Text(f'Email: {self.user.email}', size=16, italic=True, color=ft.colors.GREY),
                         ft.Text(f'Rol: {self.user.rol}', size=14, color=ft.colors.BLUE_GREY),
+                        ft.ElevatedButton(text='Cerrar Sesión', bgcolor=ft.colors.RED_300, color=ft.colors.WHITE,
+                                         on_click=lambda e: self.page.go('/login'))    
                     ],
                     horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                     spacing=10
