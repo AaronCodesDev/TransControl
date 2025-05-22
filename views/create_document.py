@@ -13,7 +13,7 @@ class CreateDocumentView:
 
     def build(self):
         self._load_empresas()
-        self.empresas_dropdown = ft.Dropdown(label='Selecciona Empresa Contratante', options=[ft.dropdown.Option(str(e.id), e.nombre) for e in self.empresas], width=300)
+        self.empresas_dropdown = ft.Dropdown(label='Selecciona Empresa Contratante', options=[ft.dropdown.Option(str(e.id), e.nombre) for e in self.empresas], width=310, menu_height=425)
         self.origen_input = ft.TextField(label='Lugar de origen')
         self.destino_input = ft.TextField(label="Lugar de destino")
         self.matricula_input = ft.TextField(label='Matrícula')
@@ -25,7 +25,7 @@ class CreateDocumentView:
         return ft.View(
             route="/create_document",
             controls=[
-                ft.AppBar(title=ft.Text('Nuevo Documento'), actions=[self.theme_button]),
+                ft.AppBar(title=ft.Text('Nuevo Documento'),center_title=True, bgcolor=ft.Colors.GREEN_300, automatically_imply_leading=False, actions=[self.theme_button]),
                 ft.Container(
                     content=ft.Column(
                         controls=[

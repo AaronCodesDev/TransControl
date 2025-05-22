@@ -16,6 +16,7 @@ def create_company():
     Session = sessionmaker(bind=engine)
     session = Session()
 
+
     empresa = Empresas(nombre=faker.company(),
                         direccion=faker.address(),
                         codigo_postal=faker.postcode(),
@@ -30,6 +31,8 @@ def create_company():
     session.add(empresa)
     session.commit()
     empresas = session.query(Empresas).all()
+    print("Empresas en la base de datos:")
+    print("=====================================")
     for e in empresas:
         print(f"{e.id} - {e.nombre} ( {e.ciudad} )")
     session.close()
