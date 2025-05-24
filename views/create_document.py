@@ -4,6 +4,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 from database.models import Documentos, Empresas, Usuario
 import asyncio
+from utils.create_pdf import rellenar_pdf_con_fondo
 
 class CreateDocumentView:
     def __init__(self, page, theme_button, force_route):
@@ -13,7 +14,12 @@ class CreateDocumentView:
 
     def build(self):
         self._load_empresas()
-        self.empresas_dropdown = ft.Dropdown(label='Selecciona Empresa Contratante', options=[ft.dropdown.Option(str(e.id), e.nombre) for e in self.empresas], width=310, menu_height=425)
+        self.empresas_dropdown = ft.Dropdown(
+            label='Selecciona Empresa Contratante',
+            options=[ft.dropdown.Option(str(e.id), e.nombre) for e in self.empresas],
+            width=310,
+            menu_height=425
+        )
         self.origen_input = ft.TextField(label='Lugar de origen')
         self.destino_input = ft.TextField(label="Lugar de destino")
         self.matricula_input = ft.TextField(label='Matrícula')
@@ -25,7 +31,13 @@ class CreateDocumentView:
         return ft.View(
             route="/create_document",
             controls=[
-                ft.AppBar(title=ft.Text('Nuevo Documento'),center_title=True, bgcolor=ft.Colors.GREEN_300, automatically_imply_leading=False, actions=[self.theme_button]),
+                ft.AppBar(
+                    title=ft.Text('Nuevo Documento'),
+                    center_title=True,
+                    bgcolor=ft.Colors.GREEN_300,
+                    automatically_imply_leading=False,
+                    actions=[self.theme_button]
+                ),
                 ft.Container(
                     content=ft.Column(
                         controls=[
@@ -55,7 +67,7 @@ class CreateDocumentView:
             ],
             scroll=ft.ScrollMode.AUTO
         )
-        
+
     def _load_empresas(self):
         engine = create_engine('sqlite:///database/transcontrol.db')
         Session = sessionmaker(bind=engine)
@@ -69,8 +81,24 @@ class CreateDocumentView:
             Session = sessionmaker(bind=engine)
             session = Session()
 
-            usuario = session.query(Usuario).first()
-            empresa = session.query(Empresas).first()
+            usuario = session.query(Usuario).filter_by(id=self.page.user.id).first()
+
+            if not self.empresas_dropdown.value:
+                self.message.value = "❌ Debes seleccionar una empresa antes de guardar."
+                self.message.visible = True
+                self.page.update()
+                session.close()
+                return
+
+            empresa_id = int(self.empresas_dropdown.value)
+            empresa = session.query(Empresas).filter_by(id=empresa_id).first()
+
+            if not all([usuario.direccion, usuario.ciudad, usuario.provincia, usuario.codigo_postal, usuario.telefono]):
+                self.message.value = "❌ Debes completar tu perfil antes de generar un documento."
+                self.message.visible = True
+                self.page.update()
+                session.close()
+                return
 
             doc = Documentos(
                 usuarios_id=usuario.id,
@@ -81,8 +109,8 @@ class CreateDocumentView:
                 fecha_transporte=date.today(),
                 fecha_creacion=date.today(),
                 matricula_vehiculo=self.matricula_input.value,
-                matricula_semiremolque='R-0000-XXX',
-                naturaleza_carga='Palets',
+                matricula_semiremolque=self.matricula_remolque_input.value,
+                naturaleza_carga=self.naturaleza_input.value,
                 peso=float(self.peso_input.value),
                 firma_cargador='Cargador',
                 firma_transportista='Transportista'
@@ -90,6 +118,34 @@ class CreateDocumentView:
 
             session.add(doc)
             session.commit()
+
+            print(f"Empresa seleccionada: {empresa.nombre} (ID: {empresa.id})")
+
+            datos = {
+                'fecha': doc.fecha_creacion.strftime('%d/%m/%Y'),
+                'contratante': empresa.nombre,
+                'direccion_contratante': empresa.direccion,
+                'poblacion_contratante': empresa.ciudad,
+                'provincia_contratante': empresa.provincia,
+                'codigo_postal_contratante': empresa.codigo_postal,
+                'telefono_contratante': empresa.telefono,
+                'transportista': usuario.nombre,
+                'direccion_transportista': usuario.direccion,
+                'poblacion_transportista': usuario.ciudad,
+                'provincia_transportista': usuario.provincia,
+                'codigo_postal_transportista': usuario.codigo_postal,
+                'telefono_transportista': usuario.telefono,
+                'origen': doc.lugar_origen,
+                'destino': doc.lugar_destino,
+                'naturaleza': doc.naturaleza_carga,
+                'peso': doc.peso,
+                'matricula': doc.matricula_vehiculo,
+                'matricula_remolque': doc.matricula_semiremolque
+            }
+
+            salida_pdf = f"output_pdf/documento_{doc.id}.pdf"
+            rellenar_pdf_con_fondo(datos, salida_path=salida_pdf)
+
             self.message.value = '✅ Documento creado correctamente'
             self.message.visible = True
 

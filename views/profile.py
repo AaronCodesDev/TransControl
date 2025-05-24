@@ -1,10 +1,52 @@
 import flet as ft
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from database.models import Usuario
 
 class ProfileView:
     def __init__(self, page: ft.Page, theme_button):
         self.page = page
         self.theme_button = theme_button
         self.user = page.user
+        self.edit_mode = False
+        self.direccion_input = ft.TextField(label='Dirección', value=self.user.direccion, width=350)
+        self.ciudad_input = ft.TextField(label='Ciudad', value=self.user.ciudad, width=350)
+        self.provincia_input = ft.TextField(label='Provincia', value=self.user.provincia, width=350)
+        self.codigo_postal_input = ft.TextField(label='Código Postal', value=self.user.codigo_postal, width=350)
+        self.telefono_input = ft.TextField(label='Teléfono', value=self.user.telefono, width=350)
+
+    def _guardar_datos(self, e):
+        engine = create_engine('sqlite:///database/transcontrol.db')
+        Session = sessionmaker(bind=engine)
+        session = Session()
+
+        usuario = session.query(Usuario).filter_by(id=self.user.id).first()
+
+        usuario.direccion = self.direccion_input.value or ''
+        usuario.ciudad = self.ciudad_input.value or ''
+        usuario.provincia = self.provincia_input.value or ''
+        usuario.codigo_postal = self.codigo_postal_input.value or ''
+        usuario.telefono = self.telefono_input.value or ''
+
+        session.commit()
+        session.close()
+
+        # Actualizar el usuario en memoria
+        self.user.direccion = self.direccion_input.value
+        self.user.ciudad = self.ciudad_input.value
+        self.user.provincia = self.provincia_input.value
+        self.user.codigo_postal = self.codigo_postal_input.value
+        self.user.telefono = self.telefono_input.value
+
+        self.edit_mode = False
+
+        self.page.snack_bar = ft.SnackBar(ft.Text("✅ Datos actualizados correctamente"), bgcolor=ft.colors.GREEN)
+        self.page.snack_bar.open = True
+        self.page.update()
+
+    def _toggle_edit_mode(self, e):
+        self.edit_mode = not self.edit_mode
+        self.page.go('/profile')
 
     def build(self):
         return ft.View(
@@ -31,26 +73,52 @@ class ProfileView:
         )
 
     def _build_profile_card(self):
+        editable = not all([
+            self.user.direccion,
+            self.user.ciudad,
+            self.user.provincia,
+            self.user.codigo_postal,
+            self.user.telefono
+        ]) or self.edit_mode
+
+        controls = [
+            ft.Text("Perfil de Usuario", size=22, weight='bold'),
+            ft.Divider(),
+            ft.Text(f'Nombre: {self.user.nombre}', size=16, italic=True, color=ft.Colors.GREY),
+            ft.Text(f'Apellido: {self.user.apellido}', size=16, italic=True, color=ft.Colors.GREY),
+            ft.Text(f'Email: {self.user.email}', size=16, italic=True, color=ft.Colors.GREY),
+            ft.Divider(),
+        ]
+
+        if editable:
+            controls += [
+                self.direccion_input,
+                self.ciudad_input,
+                self.provincia_input,
+                self.codigo_postal_input,
+                self.telefono_input,
+                ft.ElevatedButton("Guardar cambios", on_click=self._guardar_datos)
+            ]
+        else:
+            controls += [
+                ft.Text(f'Dirección: {self.user.direccion}'),
+                ft.Text(f'{self.user.codigo_postal}, {self.user.ciudad} ({self.user.provincia})'),
+                ft.Text(f'Teléfono: {self.user.telefono}'),
+                ft.OutlinedButton("Editar datos", on_click=self._toggle_edit_mode)
+            ]
+
+        controls.append(
+            ft.ElevatedButton("Cerrar Sesión", bgcolor=ft.colors.RED_300, color=ft.colors.WHITE,
+                              on_click=lambda e: self.page.go('/login'))
+        )
+
         return ft.Card(
             elevation=8,
             content=ft.Container(
                 width=350,
                 padding=30,
                 alignment=ft.alignment.center,
-                content=ft.Column(
-                    [
-                        ft.Text("Perfil de Usuario", size=22, weight='bold'),
-                        ft.Divider(),
-                        ft.Text(f'Nombre: {self.user.nombre}', size=16, italic=True, color=ft.colors.GREY),
-                        ft.Text(f'Apellido: {self.user.apellido}', size=16, italic=True, color=ft.colors.GREY),
-                        ft.Text(f'Email: {self.user.email}', size=16, italic=True, color=ft.colors.GREY),
-                        ft.Text(f'Rol: {self.user.rol}', size=14, color=ft.colors.BLUE_GREY),
-                        ft.ElevatedButton(text='Cerrar Sesión', bgcolor=ft.colors.RED_300, color=ft.colors.WHITE,
-                                         on_click=lambda e: self.page.go('/login'))    
-                    ],
-                    horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                    spacing=10
-                )
+                content=ft.Column(controls, horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=10)
             ),
         )
 

@@ -10,7 +10,12 @@ class Usuario(Base):
     apellido = Column(String(50), index=True)
     nif = Column(String(30), unique=True, index=True)
     email = Column(String(100), unique=True, index=True)
-    contrasena = Column(String(128))  # <-- 🔥 Aumentado para guardar bcrypt hash
+    contrasena = Column(String(128))
+    direccion = Column(String(200), nullable=True)
+    ciudad = Column(String(50), nullable=True)
+    provincia = Column(String(50), nullable=True)
+    codigo_postal = Column(String(20), nullable=True)
+    telefono = Column(String(30), nullable=True)
     fecha_creacion = Column(DateTime)
     rol = Column(String(20))
 
