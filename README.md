@@ -12,6 +12,7 @@ Permite almacenar, consultar y organizar información de rutas y empresas de man
 - Interfaz gráfica desarrollada con [Flet](https://flet.dev/).
 - Organización de documentos y control de diario y total de operaciones.
 - Preparado para ser ampliado a versiones Web y Mobile.
+- Generación automática de un documento PDF con código QR para su presentación ante las autoridades, si así se requiere.
 
 ---
 
@@ -23,9 +24,9 @@ Permite almacenar, consultar y organizar información de rutas y empresas de man
 TransControl/
 ├── assets/              # Archivos estáticos (imágenes, iconos, etc.)
 ├── database/            # Modelos y conexión a la base de datos
+├── output_pdf/          # Lugar donde se guardaran los Documentos de control en formato PDF
 ├── storage/             # Documentos o archivos generados por usuarios
 ├── tests/               # Scripts de pruebas(reset, creación de datos, etc.)
-├── test_files/          # Archivos de prueba para testeo manual
 ├── utils/               # Funciones Auxiliares(hashing, validaciones, etc.)
 ├── views/               # Vistas principales de la interfaz
 ├── credentials.json     # Archivo de credenciales
@@ -44,7 +45,7 @@ TransControl/
 Crear y activar entorno virtual
 
 ```bash
-python3 -m venv venv
+python3 -m venv venv       # En Windows: python -m venv venv
 source venv/bin/activate   # En Windows: venv\Scipts\activate   
 ```
 

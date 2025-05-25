@@ -31,7 +31,6 @@ class ProfileView:
         session.commit()
         session.close()
 
-        # Actualizar el usuario en memoria
         self.user.direccion = self.direccion_input.value
         self.user.ciudad = self.ciudad_input.value
         self.user.provincia = self.provincia_input.value
@@ -42,24 +41,30 @@ class ProfileView:
 
         self.page.snack_bar = ft.SnackBar(ft.Text("✅ Datos actualizados correctamente"), bgcolor=ft.colors.GREEN)
         self.page.snack_bar.open = True
+        
+        self.page.views[-1] = self.build()
         self.page.update()
 
     def _toggle_edit_mode(self, e):
         self.edit_mode = not self.edit_mode
-        self.page.go('/profile')
+        self.page.views[-1] = self.build()
+        self.page.update()
 
     def build(self):
         return ft.View(
             route='/profile',
             controls=[
-                ft.Column(
-                    controls=[
-                        ft.Row(alignment=ft.MainAxisAlignment.END),
-                        self._build_profile_card(),
-                    ],
-                    horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                    alignment=ft.MainAxisAlignment.CENTER,
-                    spacing=30
+                ft.Container(  # ⬅️ ENVUELVE el contenido
+                    expand=True,
+                    content=ft.Column(
+                        controls=[
+                            ft.Row(alignment=ft.MainAxisAlignment.END),
+                            self._build_profile_card(),
+                        ],
+                        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                        alignment=ft.MainAxisAlignment.START,  # arriba
+                        spacing=10
+                    )
                 )
             ],
             appbar=ft.AppBar(
@@ -71,6 +76,7 @@ class ProfileView:
             ),
             bottom_appbar=self._build_bottom_appbar()
         )
+
 
     def _build_profile_card(self):
         editable = not all([
@@ -97,30 +103,46 @@ class ProfileView:
                 self.provincia_input,
                 self.codigo_postal_input,
                 self.telefono_input,
-                ft.ElevatedButton("Guardar cambios", on_click=self._guardar_datos)
+                ft.Row(
+                    controls=[
+                        ft.ElevatedButton("Guardar cambios", on_click=self._guardar_datos),
+                        ft.ElevatedButton("Cerrar Sesión", bgcolor=ft.colors.RED_300, color=ft.colors.WHITE,
+                                          on_click=lambda e: self.page.go('/login'))
+                    ],
+                    alignment=ft.MainAxisAlignment.SPACE_EVENLY
+                )
             ]
         else:
             controls += [
                 ft.Text(f'Dirección: {self.user.direccion}'),
-                ft.Text(f'{self.user.codigo_postal}, {self.user.ciudad} ({self.user.provincia})'),
+                ft.Text(f'Ciudad: {self.user.ciudad}'),
+                ft.Text(f'Provincia: {self.user.provincia}'),   
+                ft.Text(f'codigo Postal: {self.user.codigo_postal}'),
                 ft.Text(f'Teléfono: {self.user.telefono}'),
-                ft.OutlinedButton("Editar datos", on_click=self._toggle_edit_mode)
+                ft.Row(
+                    controls=[
+                        ft.OutlinedButton("Editar datos", on_click=self._toggle_edit_mode),
+                        ft.ElevatedButton("Cerrar Sesión", bgcolor=ft.colors.RED_300, color=ft.colors.WHITE,
+                                          on_click=lambda e: self.page.go('/login'))
+                    ],
+                    alignment=ft.MainAxisAlignment.SPACE_EVENLY
+                )
             ]
-
-        controls.append(
-            ft.ElevatedButton("Cerrar Sesión", bgcolor=ft.colors.RED_300, color=ft.colors.WHITE,
-                              on_click=lambda e: self.page.go('/login'))
-        )
 
         return ft.Card(
             elevation=8,
             content=ft.Container(
                 width=350,
-                padding=30,
+                padding=ft.Padding(top=10, left=30, right=30, bottom=20),  # ⬅️ padding superior reducido
                 alignment=ft.alignment.center,
-                content=ft.Column(controls, horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=10)
-            ),
+                content=ft.Column(
+                    controls,
+                    horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                    spacing=10
+                )
+            )
         )
+
 
     def _build_bottom_appbar(self):
         return ft.BottomAppBar(

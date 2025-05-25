@@ -121,14 +121,10 @@ class DashboardView:
 
     def _build_fab_menu(self):
         def open_create_document(e):
-            self.menu_visible = False
-            self.page.overlay.clear()
-            self.page.go('/create_document')
+            self._navigate_clean('/create_document')
 
         def open_create_company(e):
-            self.menu_visible = False
-            self.page.overlay.clear()
-            self.page.go('/create_company')
+            self._navigate_clean('/create_company')
 
         if not self.menu_visible:
             return ft.Container()
@@ -175,6 +171,11 @@ class DashboardView:
         self.page.overlay.append(self._build_fab_menu())
         self.page.update()
 
+    def _navigate_clean(self, route):
+        self.menu_visible = False
+        self.page.overlay.clear()
+        self.page.go(route)
+
     def _build_bottom_appbar(self):
         return ft.BottomAppBar(
             bgcolor=ft.Colors.GREEN_300,
@@ -182,10 +183,10 @@ class DashboardView:
             elevation=8,
             content=ft.Row(
                 controls=[
-                    ft.IconButton(icon=ft.Icons.HOME, icon_color=ft.Colors.WHITE, tooltip="Inicio", on_click=lambda e: self.force_route('/dashboard')),
-                    ft.IconButton(icon=ft.Icons.FORMAT_LIST_NUMBERED, icon_color=ft.Colors.WHITE, tooltip="Documentos", on_click=lambda e: self.page.go('/documents')),
-                    ft.IconButton(icon=ft.Icons.APARTMENT, icon_color=ft.Colors.WHITE, tooltip="Empresas", on_click=lambda e: self.page.go('/companies')),
-                    ft.IconButton(icon=ft.Icons.PERSON, icon_color=ft.Colors.WHITE, tooltip="Perfil", on_click=lambda e: self.page.go('/profile')),
+                    ft.IconButton(icon=ft.Icons.HOME, icon_color=ft.Colors.WHITE, tooltip="Inicio", on_click=lambda e: self._navigate_clean('/dashboard')),
+                    ft.IconButton(icon=ft.Icons.FORMAT_LIST_NUMBERED, icon_color=ft.Colors.WHITE, tooltip="Documentos", on_click=lambda e: self._navigate_clean('/documents')),
+                    ft.IconButton(icon=ft.Icons.APARTMENT, icon_color=ft.Colors.WHITE, tooltip="Empresas", on_click=lambda e: self._navigate_clean('/companies')),
+                    ft.IconButton(icon=ft.Icons.PERSON, icon_color=ft.Colors.WHITE, tooltip="Perfil", on_click=lambda e: self._navigate_clean('/profile')),
                 ],
                 alignment=ft.MainAxisAlignment.SPACE_AROUND,
             )
