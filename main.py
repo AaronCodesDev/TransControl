@@ -8,6 +8,7 @@ from views.profile import ProfileView
 from views.create_company import CreateCompanyView
 from views.create_document import CreateDocumentView
 from database import SessionLocal, init_db
+from views.admin import AdminDashboardView
 
 
 def main(page: ft.Page):
@@ -16,6 +17,7 @@ def main(page: ft.Page):
     page.padding = 0
     page.vertical_alignment = ft.MainAxisAlignment.CENTER
     page.scroll = 'auto'
+    
 
     # Inicializar base de datos
     init_db()
@@ -80,6 +82,12 @@ def main(page: ft.Page):
 
         elif page.route == '/create_document':
             view = CreateDocumentView(page, theme_button, force_route)
+            page.views.append(view.build())
+            
+        elif page.route == '/admin':
+            view = AdminDashboardView(page, theme_button, force_route)
+            page.views.append(view.build())
+            
             page.views.append(view.build())
 
         page.update()

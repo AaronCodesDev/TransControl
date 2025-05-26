@@ -21,21 +21,39 @@ class DashboardView:
         self.stats_row = self._build_stats_row()
 
     def build(self):
+        self._update_stats()
         return self._build_dashboard_view()
 
     def _build_dashboard_view(self):
+        controls = [
+            ft.Container(
+                content=self.welcome_card,
+                alignment=ft.alignment.center,
+                margin=ft.margin.only(top=50),
+            ),
+            self.stats_row,
+        ]
+
+        if self.user and self.user.rol == 'admin':
+            admin_button = ft.IconButton(
+                icon=ft.Icons.SECURITY,
+                icon_color=ft.Colors.GREEN,
+                tooltip='Panel de administración',
+                on_click=lambda e: self._navigate_clean('/admin'),
+            )
+            controls.append(
+                ft.Container(
+                    content=admin_button,
+                    margin=ft.margin.only(top=30, right=30),
+                    alignment=ft.alignment.center_right
+                )
+            )
+
         return ft.View(
             '/dashboard',
             controls=[
                 ft.Column(
-                    controls=[
-                        ft.Container(
-                            content=self.welcome_card,
-                            alignment=ft.alignment.center,
-                            margin=ft.margin.only(top=50),
-                        ),
-                        self.stats_row
-                    ],
+                    controls=controls,
                     horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                     alignment=ft.MainAxisAlignment.CENTER
                 )
