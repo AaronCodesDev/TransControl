@@ -4,10 +4,10 @@ from sqlalchemy.orm import sessionmaker
 from database.models import Usuario
 
 class ProfileView:
-    def __init__(self, page: ft.Page, theme_button):
+    def __init__(self, page: ft.Page, theme_button, user=None):
         self.page = page
         self.theme_button = theme_button
-        self.user = page.user
+        self.user = user or page.user
         self.edit_mode = False
         self.direccion_input = ft.TextField(label='Dirección', value=self.user.direccion, width=350)
         self.ciudad_input = ft.TextField(label='Ciudad', value=self.user.ciudad, width=350)
@@ -51,10 +51,24 @@ class ProfileView:
         self.page.update()
 
     def build(self):
+        # Construir la lista de acciones con botón admin si corresponde
+        admin_button = None
+        if self.user and getattr(self.user, 'rol', '') == 'admin':
+            admin_button = ft.IconButton(
+                icon=ft.icons.SECURITY,
+                icon_color=ft.Colors.WHITE,
+                tooltip='Panel de administración',
+                on_click=lambda e: self.page.go('/admin'),
+            )
+        if admin_button:
+            actions = [admin_button, self.theme_button]
+        else:
+            actions = [self.theme_button]
+
         return ft.View(
             route='/profile',
             controls=[
-                ft.Container(  # ⬅️ ENVUELVE el contenido
+                ft.Container(
                     expand=True,
                     content=ft.Column(
                         controls=[
@@ -62,7 +76,7 @@ class ProfileView:
                             self._build_profile_card(),
                         ],
                         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                        alignment=ft.MainAxisAlignment.START,  # arriba
+                        alignment=ft.MainAxisAlignment.START,
                         spacing=10
                     )
                 )
@@ -72,10 +86,11 @@ class ProfileView:
                 center_title=True,
                 bgcolor=ft.colors.GREEN_300,
                 automatically_imply_leading=False,
-                actions=[self.theme_button],
+                actions=actions,
             ),
             bottom_appbar=self._build_bottom_appbar()
         )
+
 
 
     def _build_profile_card(self):
@@ -117,7 +132,7 @@ class ProfileView:
                 ft.Text(f'Dirección: {self.user.direccion}'),
                 ft.Text(f'Ciudad: {self.user.ciudad}'),
                 ft.Text(f'Provincia: {self.user.provincia}'),   
-                ft.Text(f'codigo Postal: {self.user.codigo_postal}'),
+                ft.Text(f'Código Postal: {self.user.codigo_postal}'),
                 ft.Text(f'Teléfono: {self.user.telefono}'),
                 ft.Row(
                     controls=[

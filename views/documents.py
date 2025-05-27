@@ -4,13 +4,14 @@ from sqlalchemy.orm import joinedload
 from sqlalchemy import desc
 
 class DocumentsView:
-    def __init__(self, page: ft.Page, theme_button):
+    def __init__(self, page: ft.Page, theme_button, user=None):
+        self.user = user
         self.page = page
         self.theme_button = theme_button
         self.documents = []
         self.filtered_documents = []
         self.search_term = ''
-        self.table = None
+        self.table = ft.Column()
         self.dialog = ft.AlertDialog(
             modal=True,
             title=ft.Text(''),
@@ -20,7 +21,22 @@ class DocumentsView:
 
     def build(self):
         self._load_documents()
-        self.table = self._build_documents_list()
+
+        admin_button = None
+        if self.user and getattr(self.user, 'rol', '') == 'admin':
+            admin_button = ft.IconButton(
+                icon=ft.Icons.SECURITY,
+                icon_color=ft.Colors.WHITE,
+                tooltip='Panel de administración',
+                on_click=lambda e: self.page.go('/admin'),
+            )
+        if admin_button:
+            actions = [admin_button, self.theme_button]
+        else:
+            actions = [self.theme_button]
+            
+        self.table.controls.clear()
+        self.table.controls.append(self._build_documents_list())
 
         return ft.View(
             route='/documents',
@@ -41,9 +57,9 @@ class DocumentsView:
             appbar=ft.AppBar(
                 title=ft.Text('Documentos Registrados'),
                 center_title=True,
-                bgcolor=ft.colors.GREEN_300,
+                bgcolor=ft.Colors.GREEN_300,
                 automatically_imply_leading=False,
-                actions=[self.theme_button],
+                actions=actions,
             ),
             bottom_appbar=self._build_bottom_appbar()
         )
@@ -64,40 +80,46 @@ class DocumentsView:
                 cells=[
                     ft.DataCell(
                         ft.Container(
-                            content=ft.Text(doc.contratante.nombre if doc.contratante else 'sin asignar', size=14, overflow="ellipsis", max_lines=1, no_wrap=True, text_align=ft.TextAlign.CENTER),
-                            width=60,
-                            alignment=ft.alignment.center_left
-                        )
-                    ),
-                    ft.DataCell(
-                        ft.Container(
-                            content=ft.Text(doc.lugar_origen, size=14, overflow="ellipsis", text_align=ft.TextAlign.CENTER),
-                            width=70,
-                            alignment=ft.alignment.center_left
-                        )
-                    ),
-                    ft.DataCell(
-                        ft.Container(
-                            content=ft.Text(doc.lugar_destino, size=14, overflow="ellipsis", text_align=ft.TextAlign.CENTER),
-                            width=70,
-                            alignment=ft.alignment.center_left
-                        )
-                    ),
-                    ft.DataCell(
-                        ft.Container(
-                            content=ft.Row(
-                                controls=[
-                                    ft.IconButton(
-                                        icon=ft.icons.QR_CODE,
-                                        tooltip='Ver QR del documento',
-                                        on_click=lambda e, d=doc: self.mostrar_qr(e, d),
-                                        icon_size=20,
-                                        alignment=ft.alignment.center_left
-                                    )
-                                ],
-                                spacing=5
+                            content=ft.Text(
+                                doc.contratante.nombre if doc.contratante else 'Sin asignar',
+                                size=14,
+                                overflow="ellipsis",
+                                max_lines=1,
+                                no_wrap=True,
+                                text_align=ft.TextAlign.CENTER
                             ),
-                            width=70
+                            width=150,
+                            alignment=ft.alignment.center_left
+                        )
+                    ),
+                    ft.DataCell(
+                        ft.Container(
+                            content=ft.Text(
+                                doc.lugar_origen,
+                                size=14,
+                                overflow="ellipsis",
+                                text_align=ft.TextAlign.CENTER
+                            ),
+                            width=150,
+                            alignment=ft.alignment.center_left
+                        )
+                    ),
+                    ft.DataCell(
+                        ft.Container(
+                            content=ft.Text(
+                                doc.lugar_destino,
+                                size=14,
+                                overflow="ellipsis",
+                                text_align=ft.TextAlign.CENTER
+                            ),
+                            width=150,
+                            alignment=ft.alignment.center_left
+                        )
+                    ),
+                    ft.DataCell(
+                        ft.Container(
+                            content=ft.Text("-"),
+                            width=100
                         )
                     ),
                 ]
@@ -105,33 +127,33 @@ class DocumentsView:
             for doc in self.filtered_documents
         ]
 
-        return ft.Row(
-            controls=[
-                ft.Container(
-                    content=ft.DataTable(
+        return ft.Container(
+            content=ft.Row(
+                controls=[
+                    ft.DataTable(
                         columns=[
                             ft.DataColumn(ft.Text("Contratante")),
                             ft.DataColumn(ft.Text("Origen")),
                             ft.DataColumn(ft.Text("Destino")),
-                            ft.DataColumn(ft.Text("  QR")),
+                            ft.DataColumn(ft.Text("QR")),
                         ],
                         rows=rows,
                         column_spacing=20,
                         data_row_max_height=56
-                    ),
-                    padding=10            
-                )       
-            ],
-            scroll=True,
-            expand=True
-        )    
+                    )
+                ],
+                scroll="auto"
+            ),
+            padding=10
+        )
+
     def _build_search_box(self):
         return ft.TextField(
             label='Buscar Contratante',
             hint_text='Nombre del contratante',
             value=self.search_term,
             width=300,
-            prefix_icon=ft.icons.SEARCH,
+            prefix_icon=ft.Icons.SEARCH,
             on_change=self._filter_documents
         )
 
@@ -144,27 +166,24 @@ class DocumentsView:
             if term in str(d.empresas_id_contratante).lower()
             or term in d.lugar_origen.lower()
             or term in d.lugar_destino.lower()
-            or term in d.nombre.lower()
+            or term in (d.contratante.nombre.lower() if d.contratante else "")
         ] if term else self.documents
 
-        self.table.rows.clear()
-        self.table.rows.extend(self._build_documents_list().rows)
+        self.table.controls.clear()
+        self.table.controls.append(self._build_documents_list())
         self.page.update()
-
-    def mostrar_qr(self, e, document):
-        print(f"📦 Mostrar QR para documento ID: {document.id}")
 
     def _build_bottom_appbar(self):
         return ft.BottomAppBar(
-            bgcolor=ft.colors.GREEN_300,
+            bgcolor=ft.Colors.GREEN_300,
             shape=ft.NotchShape.CIRCULAR,
             elevation=8,
             content=ft.Row(
                 controls=[
-                    ft.IconButton(icon=ft.icons.HOME, icon_color=ft.colors.WHITE, tooltip="Inicio", on_click=lambda e: self.page.go('/dashboard')),
-                    ft.IconButton(icon=ft.icons.FORMAT_LIST_NUMBERED, icon_color=ft.colors.WHITE, tooltip="Documentos", on_click=lambda e: self.page.go('/documents')),
-                    ft.IconButton(icon=ft.icons.APARTMENT, icon_color=ft.colors.WHITE, tooltip="Empresas", on_click=lambda e: self.page.go('/companies')),
-                    ft.IconButton(icon=ft.icons.PERSON, icon_color=ft.colors.WHITE, tooltip="Perfil", on_click=lambda e: self.page.go('/profile')),
+                    ft.IconButton(icon=ft.Icons.HOME, icon_color=ft.Colors.WHITE, tooltip="Inicio", on_click=lambda e: self.page.go('/dashboard')),
+                    ft.IconButton(icon=ft.Icons.FORMAT_LIST_NUMBERED, icon_color=ft.Colors.WHITE, tooltip="Documentos", on_click=lambda e: self.page.go('/documents')),
+                    ft.IconButton(icon=ft.Icons.APARTMENT, icon_color=ft.Colors.WHITE, tooltip="Empresas", on_click=lambda e: self.page.go('/companies')),
+                    ft.IconButton(icon=ft.Icons.PERSON, icon_color=ft.Colors.WHITE, tooltip="Perfil", on_click=lambda e: self.page.go('/profile')),
                 ],
                 alignment=ft.MainAxisAlignment.SPACE_AROUND,
             )

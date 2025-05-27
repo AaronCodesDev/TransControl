@@ -97,3 +97,16 @@ def get_documents_count(db: Session):
 # Obtener total de Documentos diarios
 def get_dealy_documents(db: Session, fecha: str):
     return db.query(Documentos).filter(Documentos.fecha_transporte == datetime.today()).count()
+
+# Obtener total de Documentos Registrados
+def get_document_count_all(db: Session):
+    return db.query(Documentos).count()
+
+
+# Obtener total de Empresas Registradas
+def get_company_count_all(db: Session):
+    return db.query(Empresas).count()
+
+# Obtener total de Usuarios Registrados
+def get_user_count_all(db: Session):
+    return db.query(Usuario).count()

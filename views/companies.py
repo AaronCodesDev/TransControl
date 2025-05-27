@@ -2,13 +2,14 @@ import flet as ft
 from database.models import SessionLocal, Empresas
 
 class CompaniesView:
-    def __init__(self, page: ft.Page, theme_button):
+    def __init__(self, page: ft.Page, theme_button, user=None):
         self.page = page
         self.theme_button = theme_button
+        self.user = user
         self.companies = []
         self.filtered_companies = []
         self.search_term = ''
-        self.table = None
+        self.table = ft.Column()
         self.dialog = ft.AlertDialog(
             modal=True,
             title=ft.Text(''),
@@ -19,7 +20,23 @@ class CompaniesView:
     def build(self):
         self.page.overlay.clear()
         self._load_companies()
-        self.table = self._build_companies_list()
+
+        # Configuración del botón de administración si el usuario es admin
+        admin_button = None
+        if self.user and getattr(self.user, 'rol', '') == 'admin':
+            admin_button = ft.IconButton(
+                icon=ft.Icons.SECURITY,
+                icon_color=ft.Colors.WHITE,
+                tooltip='Panel de administración',
+                on_click=lambda e: self.page.go('/admin'),
+            )
+        if admin_button:
+            actions = [admin_button, self.theme_button]
+        else:
+            actions = [self.theme_button]
+
+        self.table.controls.clear()
+        self.table.controls.append(self._build_companies_list())
 
         return ft.View(
             route='/companies',
@@ -42,7 +59,7 @@ class CompaniesView:
                 center_title=True,
                 bgcolor=ft.colors.GREEN_300,
                 automatically_imply_leading=False,
-                actions=[self.theme_button],
+                actions=actions,
             ),
             bottom_appbar=self._build_bottom_appbar()
         )
@@ -57,23 +74,94 @@ class CompaniesView:
         rows = [
             ft.DataRow(
                 cells=[
-                    ft.DataCell(ft.Text(c.nombre, max_lines=1, overflow='ellipsis'), on_tap=self._on_company_click, data=c),
-                    ft.DataCell(ft.Text(c.cif, max_lines=1, overflow='ellipsis')),
-                    ft.DataCell(ft.Text(c.direccion, max_lines=1, overflow='ellipsis')),
-                    ft.DataCell(ft.Text(c.telefono, max_lines=1, overflow='ellipsis')),
+                    ft.DataCell(
+                        ft.Container(
+                            content=ft.Text(
+                                c.nombre,
+                                size=14,
+                                overflow="ellipsis",
+                                max_lines=1,
+                                no_wrap=True,
+                            ),
+                            width=200,
+                            alignment=ft.alignment.center_left,
+                            on_click=lambda e, c=c: self._on_company_click(e, c),
+                            data=c
+                        )
+                    ),
+                    ft.DataCell(
+                        ft.Container(
+                            content=ft.Text(
+                                c.cif,
+                                size=14,
+                                overflow="ellipsis",
+                                max_lines=1
+                            ),
+                            width=150,
+                            alignment=ft.alignment.center_left
+                        )
+                    ),
+                    ft.DataCell(
+                        ft.Container(
+                            content=ft.Text(
+                                c.direccion,
+                                size=14,
+                                overflow="ellipsis",
+                                max_lines=1
+                            ),
+                            width=250,
+                            alignment=ft.alignment.center_left
+                        )
+                    ),
+                    ft.DataCell(
+                        ft.Container(
+                            content=ft.Text(
+                                c.telefono,
+                                size=14,
+                                overflow="ellipsis",
+                                max_lines=1
+                            ),
+                            width=150,
+                            alignment=ft.alignment.center_left
+                        )
+                    ),
+                    ft.DataCell(
+                        ft.Container(
+                            content=ft.Text(
+                                c.email,
+                                size=14,
+                                overflow="ellipsis",
+                                max_lines=1
+                            ),
+                            width=150,
+                            alignment=ft.alignment.center_left
+                        )
+                    ),
                 ]
             )
             for c in self.filtered_companies
         ]
 
-        return ft.DataTable(
-            columns=[
-                ft.DataColumn(ft.Text("Nombre")),
-                ft.DataColumn(ft.Text("CIF")),
-                ft.DataColumn(ft.Text("Dirección")),
-                ft.DataColumn(ft.Text("Teléfono")),
-            ],
-            rows=rows,
+        return ft.Container(
+            content=ft.Row(
+                controls=[
+                    ft.DataTable(
+                        columns=[
+                            ft.DataColumn(ft.Text('Nombre')),
+                            ft.DataColumn(ft.Text('CIF')),
+                            ft.DataColumn(ft.Text('Dirección')),
+                            ft.DataColumn(ft.Text('Teléfono')),
+                            ft.DataColumn(ft.Text('Email')),
+                        ],
+                        rows=rows,
+                        column_spacing=20,
+                        data_row_max_height=56,
+                        horizontal_margin=10
+                    )
+                ],
+                scroll="auto"
+            ),
+            padding=10
         )
 
     def _build_search_box(self):
@@ -93,31 +181,19 @@ class CompaniesView:
             c for c in self.companies if search_term in c.nombre.lower()
         ] if search_term else self.companies
 
-        self._update_companies_list()
-
-    def _update_companies_list(self):
-        self.table.rows.clear()
-        for c in self.filtered_companies:
-            row = ft.DataRow(
-                cells=[
-                    ft.DataCell(ft.Text(c.nombre, max_lines=1, overflow='ellipsis'), on_tap=self._on_company_click, data=c),
-                    ft.DataCell(ft.Text(c.cif, max_lines=1, overflow='ellipsis')),
-                    ft.DataCell(ft.Text(c.direccion, max_lines=1, overflow='ellipsis')),
-                    ft.DataCell(ft.Text(c.telefono, max_lines=1, overflow='ellipsis')),
-                ]
-            )
-            self.table.rows.append(row)
+        self.table.controls.clear()
+        self.table.controls.append(self._build_companies_list())
         self.page.update()
 
-    def _on_company_click(self, e):
-        c = e.control.data
+    def _on_company_click(self, e, c):
         print(f'Visualizando Empresa: {c.nombre}')
 
         fields = {
             'nombre': ft.TextField(label="Nombre", value=c.nombre, disabled=True),
             'cif': ft.TextField(label="CIF", value=c.cif, disabled=True),
             'direccion': ft.TextField(label="Dirección", value=c.direccion, disabled=True),
-            'telefono': ft.TextField(label="Teléfono", value=c.telefono, disabled=True)
+            'telefono': ft.TextField(label="Teléfono", value=c.telefono, disabled=True),
+            'email': ft.TextField(label="Email", value=c.email if hasattr(c, 'email') else '', disabled=True)
         }
 
         def edit_mode(e):
@@ -136,11 +212,14 @@ class CompaniesView:
                 c.cif = fields['cif'].value
                 c.direccion = fields['direccion'].value
                 c.telefono = fields['telefono'].value
+                c.email = fields['email'].value if hasattr(c, 'email') else None
                 session.commit()
                 print('Datos actualizados correctamente')
                 self.dialog.open = False
                 self._load_companies()
-                self._update_companies_list()
+                self.table.controls.clear()
+                self.table.controls.append(self._build_companies_list())
+                self.page.update()
             except Exception as ex:
                 print(f'Error al actualizar: {ex}')
                 session.rollback()
@@ -161,7 +240,9 @@ class CompaniesView:
                     session.commit()
                     print(f'Empresa {company.nombre} eliminada correctamente')
                     self._load_companies()
-                    self._update_companies_list()
+                    self.table.controls.clear()
+                    self.table.controls.append(self._build_companies_list())
+                    self.page.update()
                     self.dialog.open = False
                 else:
                     print(f'Empresa con ID {company_id} no encontrada.')

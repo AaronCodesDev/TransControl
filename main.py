@@ -9,6 +9,7 @@ from views.create_company import CreateCompanyView
 from views.create_document import CreateDocumentView
 from database import SessionLocal, init_db
 from views.admin import AdminDashboardView
+from views.users import UsersView
 
 
 def main(page: ft.Page):
@@ -69,11 +70,11 @@ def main(page: ft.Page):
             page.views.append(view.build())
 
         elif page.route == '/companies':
-            view = CompaniesView(page, theme_button)
+            view = CompaniesView(page, theme_button, user=page.user)
             page.views.append(view.build())
 
         elif page.route == '/documents':
-            view = DocumentsView(page, theme_button)
+            view = DocumentsView(page, theme_button, user=page.user)
             page.views.append(view.build())
 
         elif page.route == '/create_company':
@@ -87,7 +88,9 @@ def main(page: ft.Page):
         elif page.route == '/admin':
             view = AdminDashboardView(page, theme_button, force_route)
             page.views.append(view.build())
-            
+        
+        elif page.route == '/users':
+            view = UsersView(page, theme_button)
             page.views.append(view.build())
 
         page.update()
