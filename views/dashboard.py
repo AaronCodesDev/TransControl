@@ -15,7 +15,7 @@ class DashboardView:
 
         self.total_routes = get_document_count(self.page.db)
         self.daily_routes = len(get_daily_routes(self.page.db, date.today()))
-        self.company_count = get_company_count(self.page.db)
+        self.company_count = get_company_count(self.page.db, self.page.user)
 
         self.welcome_card = self._build_welcome_card()
         self.stats_row = self._build_stats_row()

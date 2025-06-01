@@ -6,10 +6,11 @@ from database.models import Empresas
 import asyncio
 
 class CreateCompanyView:
-    def __init__(self, page: ft.Page, theme_button, force_route):
+    def __init__(self, page: ft.Page, theme_button, force_route, user):
         self.page = page
         self.theme_button = theme_button
         self.force_route = force_route
+        self.user = user
 
     def build(self):
         # Inputs
@@ -66,9 +67,9 @@ class CreateCompanyView:
         if not all([
             self.nombre.value.strip(),
             self.direccion.value.strip(),
-            self.codigo_postal.value.strip(),
             self.ciudad.value.strip(),
             self.provincia.value.strip(),
+            self.codigo_postal.value.strip(),
             self.cif.value.strip(),
             self.telefono.value.strip(),
             self.email.value.strip()
@@ -87,13 +88,14 @@ class CreateCompanyView:
             new_company = Empresas(
                 nombre=self.nombre.value.strip(),
                 direccion=self.direccion.value.strip(),
-                codigo_postal=self.codigo_postal.value.strip(),
                 ciudad=self.ciudad.value.strip(),
                 provincia=self.provincia.value.strip(),
+                codigo_postal=self.codigo_postal.value.strip(),
                 cif=self.cif.value.strip(),
                 telefono=self.telefono.value.strip(),
                 email=self.email.value.strip(),
-                fecha_creacion=date.today()
+                fecha_creacion=date.today(),
+                usuario_id=self.user.id
             )
 
             session.add(new_company)

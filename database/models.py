@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Float, Date
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Float, Date, Boolean
 from sqlalchemy.orm import relationship, sessionmaker
 from database.db import Base , SessionLocal
 from datetime import datetime
@@ -18,6 +18,10 @@ class Usuario(Base):
     telefono = Column(String(30), nullable=True)
     fecha_creacion = Column(DateTime)
     rol = Column(String(20))
+    usuario_id = Column(Integer, ForeignKey('usuarios.id'), nullable=True)  # Para relaciones jerárquicas
+    is_admin = Column(Boolean, default=False)
+        
+    empresas = relationship('Empresas', back_populates='usuario')
 
     documentos = relationship('Documentos', back_populates='usuario')
     
@@ -33,8 +37,12 @@ class Empresas(Base):
     cif = Column(String(20), unique=True, index=True)
     telefono = Column(String(30))
     email = Column(String(100), unique=True, index=True)
+    usuario_id = Column(Integer, ForeignKey('usuarios.id'),nullable=False)
     fecha_creacion = Column(DateTime)
         
+    usuario = relationship('Usuario', back_populates='empresas')
+    
+    
     # Crear relaciones entre documentos y empresas
     documentos_como_transportista = relationship(
         'Documentos',

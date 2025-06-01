@@ -78,11 +78,11 @@ def main(page: ft.Page):
             page.views.append(view.build())
 
         elif page.route == '/create_company':
-            view = CreateCompanyView(page, theme_button, force_route)
+            view = CreateCompanyView(page, theme_button, force_route, page.user)
             page.views.append(view.build())
 
         elif page.route == '/create_document':
-            view = CreateDocumentView(page, theme_button, force_route)
+            view = CreateDocumentView(page, theme_button, force_route, page.user)
             page.views.append(view.build())
             
         elif page.route == '/admin':

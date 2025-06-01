@@ -63,10 +63,13 @@ class CompaniesView:
             ),
             bottom_appbar=self._build_bottom_appbar()
         )
-
+        
     def _load_companies(self):
         db = SessionLocal()
-        self.companies = db.query(Empresas).all()
+        if self.user and hasattr(self.user, 'id'):
+            self.companies = db.query(Empresas).filter(Empresas.usuario_id == self.user.id).all()
+        else:
+            self.companies = []
         self.filtered_companies = self.companies
         db.close()
 

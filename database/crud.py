@@ -87,7 +87,9 @@ def get_daily_routes(db: Session, fecha: str):
 ### CRUD PARA EMPRESAS ###
 
 # Obtener total de empresas registradas
-def get_company_count(db: Session):
+def get_company_count(db: Session, user: Usuario = None):
+    if user and not getattr(user, 'is_admin', False):
+        return db.query(Empresas).filter(Empresas.usuario_id == user.id).count()
     return db.query(Empresas).count()
 
 # Obener total de documentos 
