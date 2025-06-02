@@ -82,7 +82,7 @@ def main(page: ft.Page):
             page.views.append(view.build())
 
         elif page.route == '/create_document':
-            view = CreateDocumentView(page, theme_button, force_route, page.user)
+            view = CreateDocumentView(page, theme_button, force_route)
             page.views.append(view.build())
             
         elif page.route == '/admin':
@@ -90,7 +90,7 @@ def main(page: ft.Page):
             page.views.append(view.build())
         
         elif page.route == '/users':
-            view = UsersView(page, theme_button)
+            view = UsersView(page, theme_button, force_route)
             page.views.append(view.build())
 
         page.update()

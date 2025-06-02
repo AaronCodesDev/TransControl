@@ -22,6 +22,7 @@ class Usuario(Base):
     is_admin = Column(Boolean, default=False)
         
     empresas = relationship('Empresas', back_populates='usuario')
+    empresas = relationship('Empresas', back_populates='creador')
 
     documentos = relationship('Documentos', back_populates='usuario')
     
@@ -41,6 +42,8 @@ class Empresas(Base):
     fecha_creacion = Column(DateTime)
         
     usuario = relationship('Usuario', back_populates='empresas')
+    
+    creador = relationship('Usuario', back_populates='empresas')
     
     
     # Crear relaciones entre documentos y empresas

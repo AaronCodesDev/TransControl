@@ -7,10 +7,11 @@ import asyncio
 from utils.create_pdf import rellenar_pdf_con_fondo
 
 class CreateDocumentView:
-    def __init__(self, page, theme_button, force_route):
+    def __init__(self, page, theme_button, force_route, user):
         self.page = page
         self.theme_button = theme_button
         self.force_route = force_route
+        self.user = user
 
     def build(self):
         self._load_empresas()

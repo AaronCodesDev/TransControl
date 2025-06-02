@@ -2,13 +2,14 @@ import flet as ft
 from database.models import SessionLocal, Usuario
 
 class UsersView:
-    def __init__(self, page: ft.Page, theme_button):
+    def __init__(self, page: ft.Page, theme_button, force_route):
         self.page = page
         self.theme_button = theme_button
         self.users = []
         self.filtered_users = []
         self.search_term = ''
         self.table = ft.Column()
+        self.force_route = force_route
 
     def build(self):
         self.page.overlay.clear()
@@ -17,6 +18,22 @@ class UsersView:
 
         return ft.View(
             route='/users',
+            appbar=ft.AppBar(
+                title=ft.Text('Usuarios Registrados'),
+                center_title=True,
+                bgcolor=ft.Colors.GREEN_300,
+                automatically_imply_leading=False,
+                actions=[
+                    ft.IconButton(
+                        icon=ft.Icons.SECURITY,
+                        tooltip='Panel de administración',
+                        icon_color=ft.Colors.WHITE,
+                        on_click=lambda e: self.page.go('/admin')
+                    ),
+                    self.theme_button
+                ]
+                # Aquí NO ponemos scroll, porque AppBar no lo soporta
+            ),
             controls=[
                 ft.Column(
                     controls=[
@@ -26,8 +43,8 @@ class UsersView:
                             expand=True,
                             padding=10,
                             margin=ft.margin.symmetric(horizontal=10),
-                            height=600,  # puedes ajustar la altura
-                            width=1000,  # o expand=True si lo deseas responsivo
+                            height=600,  # Altura fija para activar scroll si se supera
+                            width=1000,
                             alignment=ft.alignment.center,
                             bgcolor=ft.Colors.WHITE,
                             border_radius=10,
@@ -39,17 +56,10 @@ class UsersView:
                     alignment=ft.MainAxisAlignment.START,
                     horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                     spacing=20,
-                    scroll=True,
+                    scroll=True,  # Scroll activado para esta columna
                     expand=True
                 )
             ],
-            appbar=ft.AppBar(
-                title=ft.Text('Usuarios Registrados'),
-                center_title=True,
-                bgcolor=ft.Colors.GREEN_300,
-                automatically_imply_leading=False,
-                actions=[self.theme_button],
-            ),
             bottom_appbar=self._build_bottom_appbar()
         )
 
@@ -98,7 +108,7 @@ class UsersView:
             hint_text="Nombre, apellido o email",
             value=self.search_term,
             width=350,
-            prefix_icon=ft.icons.SEARCH,
+            prefix_icon=ft.Icons.SEARCH,  # Aquí también cambié para evitar el warning
             on_change=self._filter_users
         )
 

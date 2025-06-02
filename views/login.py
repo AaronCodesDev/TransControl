@@ -29,8 +29,8 @@ class LoginView:
         )
 
         # Mensajes
-        self.error_text = ft.Text('', color=ft.colors.RED, size=12, visible=False)
-        self.message_text = ft.Text('', color=ft.colors.GREEN, size=12, visible=False)
+        self.error_text = ft.Text('', color=ft.Colors.RED, size=12, visible=False)
+        self.message_text = ft.Text('', color=ft.Colors.GREEN, size=12, visible=False)
 
     def reset_fields(self):
         self.email.value = ''

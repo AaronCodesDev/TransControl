@@ -1,5 +1,6 @@
 import flet as ft
 from database.models import SessionLocal, Empresas
+from sqlalchemy.orm import joinedload
 
 class CompaniesView:
     def __init__(self, page: ft.Page, theme_button, user=None):
@@ -21,7 +22,6 @@ class CompaniesView:
         self.page.overlay.clear()
         self._load_companies()
 
-        # Configuración del botón de administración si el usuario es admin
         admin_button = None
         if self.user and getattr(self.user, 'rol', '') == 'admin':
             admin_button = ft.IconButton(
@@ -30,10 +30,10 @@ class CompaniesView:
                 tooltip='Panel de administración',
                 on_click=lambda e: self.page.go('/admin'),
             )
+
+        actions = [self.theme_button]
         if admin_button:
-            actions = [admin_button, self.theme_button]
-        else:
-            actions = [self.theme_button]
+            actions.insert(0, admin_button)
 
         self.table.controls.clear()
         self.table.controls.append(self._build_companies_list())
@@ -63,103 +63,56 @@ class CompaniesView:
             ),
             bottom_appbar=self._build_bottom_appbar()
         )
-        
+
     def _load_companies(self):
         db = SessionLocal()
-        if self.user and hasattr(self.user, 'id'):
-            self.companies = db.query(Empresas).filter(Empresas.usuario_id == self.user.id).all()
-        else:
-            self.companies = []
-        self.filtered_companies = self.companies
-        db.close()
+        try:
+            query = db.query(Empresas).options(joinedload(Empresas.creador))
+            if self.user and getattr(self.user, 'rol', '') == 'admin':
+                self.companies = query.all()
+            elif self.user and hasattr(self.user, 'id'):
+                self.companies = query.filter(Empresas.usuario_id == self.user.id).all()
+            else:
+                self.companies = []
+            self.filtered_companies = self.companies
+        finally:
+            db.close()
 
     def _build_companies_list(self):
-        rows = [
-            ft.DataRow(
-                cells=[
-                    ft.DataCell(
-                        ft.Container(
-                            content=ft.Text(
-                                c.nombre,
-                                size=14,
-                                overflow="ellipsis",
-                                max_lines=1,
-                                no_wrap=True,
-                            ),
-                            width=200,
-                            alignment=ft.alignment.center_left,
-                            on_click=lambda e, c=c: self._on_company_click(e, c),
-                            data=c
-                        )
-                    ),
-                    ft.DataCell(
-                        ft.Container(
-                            content=ft.Text(
-                                c.cif,
-                                size=14,
-                                overflow="ellipsis",
-                                max_lines=1
-                            ),
-                            width=150,
-                            alignment=ft.alignment.center_left
-                        )
-                    ),
-                    ft.DataCell(
-                        ft.Container(
-                            content=ft.Text(
-                                c.direccion,
-                                size=14,
-                                overflow="ellipsis",
-                                max_lines=1
-                            ),
-                            width=250,
-                            alignment=ft.alignment.center_left
-                        )
-                    ),
-                    ft.DataCell(
-                        ft.Container(
-                            content=ft.Text(
-                                c.telefono,
-                                size=14,
-                                overflow="ellipsis",
-                                max_lines=1
-                            ),
-                            width=150,
-                            alignment=ft.alignment.center_left
-                        )
-                    ),
-                    ft.DataCell(
-                        ft.Container(
-                            content=ft.Text(
-                                c.email,
-                                size=14,
-                                overflow="ellipsis",
-                                max_lines=1
-                            ),
-                            width=150,
-                            alignment=ft.alignment.center_left
-                        )
-                    ),
-                ]
-            )
-            for c in self.filtered_companies
+        columns = [
+            ft.DataColumn(ft.Text('Nombre')),
+            ft.DataColumn(ft.Text('CIF')),
+            ft.DataColumn(ft.Text('Dirección')),
+            ft.DataColumn(ft.Text('Teléfono')),
+            ft.DataColumn(ft.Text('Email')),
         ]
+        if self.user and getattr(self.user, 'rol', '') == 'admin':
+            columns.insert(0, ft.DataColumn(ft.Text('Creado por')))
+
+        rows = []
+        for c in self.filtered_companies:
+            cells = []
+            if self.user and getattr(self.user, 'rol', '') == 'admin':
+                cells.append(ft.DataCell(ft.Text(c.creador.email if c.creador else 'Desconocido')))
+
+            cells.extend([
+                ft.DataCell(ft.Text(c.nombre), on_tap=lambda e, c=c: self._on_company_click(e, c)),
+                ft.DataCell(ft.Text(c.cif)),
+                ft.DataCell(ft.Text(c.direccion)),
+                ft.DataCell(ft.Text(c.telefono)),
+                ft.DataCell(ft.Text(c.email)),
+            ])
+            rows.append(ft.DataRow(cells=cells))
 
         return ft.Container(
             content=ft.Row(
                 controls=[
                     ft.DataTable(
-                        columns=[
-                            ft.DataColumn(ft.Text('Nombre')),
-                            ft.DataColumn(ft.Text('CIF')),
-                            ft.DataColumn(ft.Text('Dirección')),
-                            ft.DataColumn(ft.Text('Teléfono')),
-                            ft.DataColumn(ft.Text('Email')),
-                        ],
+                        columns=columns,
                         rows=rows,
                         column_spacing=20,
                         data_row_max_height=56,
-                        horizontal_margin=10
+                        horizontal_margin=10,
                     )
                 ],
                 scroll="auto"
@@ -211,18 +164,19 @@ class CompaniesView:
             print(f'Guardando cambios para: {c.nombre}')
             session = SessionLocal()
             try:
-                c.nombre = fields['nombre'].value
-                c.cif = fields['cif'].value
-                c.direccion = fields['direccion'].value
-                c.telefono = fields['telefono'].value
-                c.email = fields['email'].value if hasattr(c, 'email') else None
-                session.commit()
-                print('Datos actualizados correctamente')
+                db_company = session.query(Empresas).filter(Empresas.id == c.id).first()
+                if db_company:
+                    db_company.nombre = fields['nombre'].value
+                    db_company.cif = fields['cif'].value
+                    db_company.direccion = fields['direccion'].value
+                    db_company.telefono = fields['telefono'].value
+                    db_company.email = fields['email'].value
+                    session.commit()
+                    print('Datos actualizados correctamente')
                 self.dialog.open = False
                 self._load_companies()
                 self.table.controls.clear()
                 self.table.controls.append(self._build_companies_list())
-                self.page.update()
             except Exception as ex:
                 print(f'Error al actualizar: {ex}')
                 session.rollback()
@@ -245,7 +199,6 @@ class CompaniesView:
                     self._load_companies()
                     self.table.controls.clear()
                     self.table.controls.append(self._build_companies_list())
-                    self.page.update()
                     self.dialog.open = False
                 else:
                     print(f'Empresa con ID {company_id} no encontrada.')
@@ -261,7 +214,7 @@ class CompaniesView:
         delete_button = ft.IconButton(icon=ft.icons.DELETE, tooltip='Eliminar', on_click=lambda e: delete_company(e, c.id))
         close_button = ft.IconButton(icon=ft.icons.CLOSE, tooltip='Cerrar', on_click=close_dialog)
 
-        self.dialog.title.value = f'Información de {c.nombre}'
+        self.dialog.title = ft.Text(f'Información de {c.nombre}')
         self.dialog.content = ft.Column(list(fields.values()), tight=True)
         self.dialog.actions = [
             ft.Row(
