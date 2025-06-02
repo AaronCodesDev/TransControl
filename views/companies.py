@@ -57,7 +57,7 @@ class CompaniesView:
             appbar=ft.AppBar(
                 title=ft.Text('Empresas Registradas'),
                 center_title=True,
-                bgcolor=ft.colors.GREEN_300,
+                bgcolor=ft.Colors.GREEN_300,
                 automatically_imply_leading=False,
                 actions=actions,
             ),
@@ -126,7 +126,7 @@ class CompaniesView:
             hint_text="Nombre de la empresa",
             value=self.search_term,
             width=300,
-            prefix_icon=ft.icons.SEARCH,
+            prefix_icon=ft.Icons.SEARCH,
             on_change=self._filter_companies
         )
 
@@ -209,10 +209,10 @@ class CompaniesView:
                 session.close()
             self.page.update()
 
-        edit_button = ft.IconButton(icon=ft.icons.EDIT, tooltip='Editar', on_click=edit_mode)
-        save_button = ft.IconButton(icon=ft.icons.SAVE, tooltip='Guardar', on_click=save_changes, visible=False)
-        delete_button = ft.IconButton(icon=ft.icons.DELETE, tooltip='Eliminar', on_click=lambda e: delete_company(e, c.id))
-        close_button = ft.IconButton(icon=ft.icons.CLOSE, tooltip='Cerrar', on_click=close_dialog)
+        edit_button = ft.IconButton(icon=ft.Icons.EDIT, tooltip='Editar', on_click=edit_mode)
+        save_button = ft.IconButton(icon=ft.Icons.SAVE, tooltip='Guardar', on_click=save_changes, visible=False)
+        delete_button = ft.IconButton(icon=ft.Icons.DELETE, tooltip='Eliminar', on_click=lambda e: delete_company(e, c.id))
+        close_button = ft.IconButton(icon=ft.Icons.CLOSE, tooltip='Cerrar', on_click=close_dialog)
 
         self.dialog.title = ft.Text(f'Información de {c.nombre}')
         self.dialog.content = ft.Column(list(fields.values()), tight=True)
@@ -228,15 +228,15 @@ class CompaniesView:
 
     def _build_bottom_appbar(self):
         return ft.BottomAppBar(
-            bgcolor=ft.colors.GREEN_300,
+            bgcolor=ft.Colors.GREEN_300,
             shape=ft.NotchShape.CIRCULAR,
             elevation=8,
             content=ft.Row(
                 controls=[
-                    ft.IconButton(icon=ft.icons.HOME, icon_color=ft.colors.WHITE, tooltip="Inicio", on_click=lambda e: self.page.go('/dashboard')),
-                    ft.IconButton(icon=ft.icons.FORMAT_LIST_NUMBERED, icon_color=ft.colors.WHITE, tooltip="Documentos", on_click=lambda e: self.page.go('/documents')),
-                    ft.IconButton(icon=ft.icons.APARTMENT, icon_color=ft.colors.WHITE, tooltip="Empresas", on_click=lambda e: self.page.go('/companies')),
-                    ft.IconButton(icon=ft.icons.PERSON, icon_color=ft.colors.WHITE, tooltip="Perfil", on_click=lambda e: self.page.go('/profile')),
+                    ft.IconButton(icon=ft.Icons.HOME, icon_color=ft.Colors.WHITE, tooltip="Inicio", on_click=lambda e: self.page.go('/dashboard')),
+                    ft.IconButton(icon=ft.Icons.FORMAT_LIST_NUMBERED, icon_color=ft.Colors.WHITE, tooltip="Documentos", on_click=lambda e: self.page.go('/documents')),
+                    ft.IconButton(icon=ft.Icons.APARTMENT, icon_color=ft.Colors.WHITE, tooltip="Empresas", on_click=lambda e: self.page.go('/companies')),
+                    ft.IconButton(icon=ft.Icons.PERSON, icon_color=ft.Colors.WHITE, tooltip="Perfil", on_click=lambda e: self.page.go('/profile')),
                 ],
                 alignment=ft.MainAxisAlignment.SPACE_AROUND,
             )

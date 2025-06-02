@@ -39,7 +39,7 @@ class ProfileView:
 
         self.edit_mode = False
 
-        self.page.snack_bar = ft.SnackBar(ft.Text("✅ Datos actualizados correctamente"), bgcolor=ft.colors.GREEN)
+        self.page.snack_bar = ft.SnackBar(ft.Text("✅ Datos actualizados correctamente"), bgcolor=ft.Colors.GREEN)
         self.page.snack_bar.open = True
         
         self.page.views[-1] = self.build()
@@ -55,7 +55,7 @@ class ProfileView:
         admin_button = None
         if self.user and getattr(self.user, 'rol', '') == 'admin':
             admin_button = ft.IconButton(
-                icon=ft.icons.SECURITY,
+                icon=ft.Icons.SECURITY,
                 icon_color=ft.Colors.WHITE,
                 tooltip='Panel de administración',
                 on_click=lambda e: self.page.go('/admin'),
@@ -84,7 +84,7 @@ class ProfileView:
             appbar=ft.AppBar(
                 title=ft.Text(f'Perfil - {self.user.nombre}'),
                 center_title=True,
-                bgcolor=ft.colors.GREEN_300,
+                bgcolor=ft.Colors.GREEN_300,
                 automatically_imply_leading=False,
                 actions=actions,
             ),
@@ -121,7 +121,7 @@ class ProfileView:
                 ft.Row(
                     controls=[
                         ft.ElevatedButton("Guardar cambios", on_click=self._guardar_datos),
-                        ft.ElevatedButton("Cerrar Sesión", bgcolor=ft.colors.RED_300, color=ft.colors.WHITE,
+                        ft.ElevatedButton("Cerrar Sesión", bgcolor=ft.Colors.RED_300, color=ft.Colors.WHITE,
                                           on_click=lambda e: self.page.go('/login'))
                     ],
                     alignment=ft.MainAxisAlignment.SPACE_EVENLY
@@ -137,7 +137,7 @@ class ProfileView:
                 ft.Row(
                     controls=[
                         ft.OutlinedButton("Editar datos", on_click=self._toggle_edit_mode),
-                        ft.ElevatedButton("Cerrar Sesión", bgcolor=ft.colors.RED_300, color=ft.colors.WHITE,
+                        ft.ElevatedButton("Cerrar Sesión", bgcolor=ft.Colors.RED_300, color=ft.Colors.WHITE,
                                           on_click=lambda e: self.page.go('/login'))
                     ],
                     alignment=ft.MainAxisAlignment.SPACE_EVENLY
@@ -161,32 +161,32 @@ class ProfileView:
 
     def _build_bottom_appbar(self):
         return ft.BottomAppBar(
-            bgcolor=ft.colors.GREEN_300,
+            bgcolor=ft.Colors.GREEN_300,
             shape=ft.NotchShape.CIRCULAR,
             elevation=8,
             content=ft.Row(
                 controls=[
                     ft.IconButton(
-                        icon=ft.icons.HOME,
-                        icon_color=ft.colors.WHITE,
+                        icon=ft.Icons.HOME,
+                        icon_color=ft.Colors.WHITE,
                         tooltip="Inicio",
                         on_click=lambda e: self.page.go('/dashboard')
                     ),
                     ft.IconButton(
-                        icon=ft.icons.FORMAT_LIST_NUMBERED,
-                        icon_color=ft.colors.WHITE,
+                        icon=ft.Icons.FORMAT_LIST_NUMBERED,
+                        icon_color=ft.Colors.WHITE,
                         tooltip="Documentos",
                         on_click=lambda e: self.page.go('/documents')
                     ),
                     ft.IconButton(
-                        icon=ft.icons.APARTMENT,
-                        icon_color=ft.colors.WHITE,
+                        icon=ft.Icons.APARTMENT,
+                        icon_color=ft.Colors.WHITE,
                         tooltip="Empresas",
                         on_click=lambda e: self.page.go('/companies')
                     ),
                     ft.IconButton(
-                        icon=ft.icons.PERSON,
-                        icon_color=ft.colors.WHITE,
+                        icon=ft.Icons.PERSON,
+                        icon_color=ft.Colors.WHITE,
                         tooltip="Perfil",
                         on_click=lambda e: self.page.go('/profile')
                     ),
