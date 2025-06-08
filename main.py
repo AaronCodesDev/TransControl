@@ -19,6 +19,7 @@ def main(page: ft.Page):
     page.padding = 0
     page.vertical_alignment = ft.MainAxisAlignment.CENTER
     page.scroll = 'auto'
+    page.assets_dir = "assets"
     
 
     # Inicializar base de datos
@@ -97,7 +98,7 @@ def main(page: ft.Page):
         elif page.route.startswith('/output_pdf/'):
             try:
                 doc_id = int(page.route.split('/')[-1])
-                view = OutputPDFView(page, doc_id)
+                view = OutputPDFView(page, theme_button, doc_id)
                 page.views.append(view.build())
             except ValueError:
                 print(f'❌ Error al parsear ID de documento: {page.route}')
