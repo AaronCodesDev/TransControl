@@ -76,6 +76,7 @@ class Documentos(Base):
     peso = Column(Float, nullable=False)
     firma_cargador = Column(String(100)) 
     firma_transportista = Column(String(100))
+    archivo = Column(String(200), nullable=True)  # Ruta del archivo asociado al documento
     
     usuario = relationship('Usuario', back_populates='documentos')
     transportista = relationship('Empresas',

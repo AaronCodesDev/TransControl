@@ -30,7 +30,7 @@ class CreateCompanyView:
             controls=[
                 ft.AppBar(
                     title=ft.Text("Registrar Empresa"),
-                    bgcolor=ft.colors.GREEN_300,
+                    bgcolor=ft.Colors.GREEN_300,
                     center_title=True,
                     actions=[self.theme_button]
                 ),
@@ -75,7 +75,7 @@ class CreateCompanyView:
             self.email.value.strip()
         ]):
             self.message.value = "⚠️ Todos los campos son obligatorios."
-            self.message.color = ft.colors.RED
+            self.message.color = ft.Colors.RED
             self.message.visible = True
             self.page.update()
             return 
@@ -104,7 +104,7 @@ class CreateCompanyView:
             session.close()
 
             self.message.value = f"✅ Empresa '{company_name}' guardada"
-            self.message.color = ft.colors.GREEN
+            self.message.color = ft.Colors.GREEN
             self.message.visible = True
             self.page.update()
             
@@ -113,6 +113,6 @@ class CreateCompanyView:
 
         except Exception as err:
             self.message.value = f"❌ Error: {err}"
-            self.message.color = ft.colors.RED
+            self.message.color = ft.Colors.RED
             self.message.visible = True
             self.page.update()

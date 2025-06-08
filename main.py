@@ -10,6 +10,7 @@ from views.create_document import CreateDocumentView
 from database import SessionLocal, init_db
 from views.admin import AdminDashboardView
 from views.users import UsersView
+from views.output_pdf import OutputPDFView
 
 
 def main(page: ft.Page):
@@ -82,7 +83,7 @@ def main(page: ft.Page):
             page.views.append(view.build())
 
         elif page.route == '/create_document':
-            view = CreateDocumentView(page, theme_button, force_route)
+            view = CreateDocumentView(page, theme_button, force_route, page.user)
             page.views.append(view.build())
             
         elif page.route == '/admin':
@@ -92,6 +93,15 @@ def main(page: ft.Page):
         elif page.route == '/users':
             view = UsersView(page, theme_button, force_route)
             page.views.append(view.build())
+            
+        elif page.route.startswith('/output_pdf/'):
+            try:
+                doc_id = int(page.route.split('/')[-1])
+                view = OutputPDFView(page, doc_id)
+                page.views.append(view.build())
+            except ValueError:
+                print(f'❌ Error al parsear ID de documento: {page.route}')
+                page.views.append(ft.View(route=page.route, controls=[ft.Text("Documento no encontrado.")]))
 
         page.update()
 

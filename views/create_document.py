@@ -5,6 +5,7 @@ from sqlalchemy import create_engine
 from database.models import Documentos, Empresas, Usuario
 import asyncio
 from utils.create_pdf import rellenar_pdf_con_fondo
+import re 
 
 class CreateDocumentView:
     def __init__(self, page, theme_button, force_route, user):
@@ -143,9 +144,13 @@ class CreateDocumentView:
                 'matricula': doc.matricula_vehiculo,
                 'matricula_remolque': doc.matricula_semiremolque
             }
-
-            salida_pdf = f"output_pdf/documento_{doc.id}.pdf"
+            correo_limpio = re.sub(r'[^\w\-_.]', '_', usuario.email)
+            archivo_nombre = f"documento_{correo_limpio}_{doc.id}.pdf"
+            salida_pdf = f"assets/docs/{archivo_nombre}"  # asegurarte de que esta ruta exista
             rellenar_pdf_con_fondo(datos, salida_path=salida_pdf)
+
+            doc.archivo = archivo_nombre  # Guarda el nombre del archivo en la base de datos
+            session.commit()
 
             self.message.value = '✅ Documento creado correctamente'
             self.message.visible = True

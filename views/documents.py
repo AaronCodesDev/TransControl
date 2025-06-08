@@ -78,7 +78,21 @@ class DocumentsView:
         rows = [
             ft.DataRow(
                 cells=[
-                    ft.DataCell(
+                    ft.DataCell(  # Creador
+                        ft.Container(
+                            content=ft.Text(
+                                doc.usuario.email if doc.usuario else 'Desconocido',
+                                size=14,
+                                overflow="ellipsis",
+                                max_lines=1,
+                                no_wrap=True,
+                                text_align=ft.TextAlign.CENTER
+                            ),
+                            width=180,
+                            alignment=ft.alignment.center_left
+                        )
+                    ),
+                    ft.DataCell(  # Contratante
                         ft.Container(
                             content=ft.Text(
                                 doc.contratante.nombre if doc.contratante else 'Sin asignar',
@@ -92,7 +106,7 @@ class DocumentsView:
                             alignment=ft.alignment.center_left
                         )
                     ),
-                    ft.DataCell(
+                    ft.DataCell(  # Origen
                         ft.Container(
                             content=ft.Text(
                                 doc.lugar_origen,
@@ -104,7 +118,7 @@ class DocumentsView:
                             alignment=ft.alignment.center_left
                         )
                     ),
-                    ft.DataCell(
+                    ft.DataCell(  # Destino
                         ft.Container(
                             content=ft.Text(
                                 doc.lugar_destino,
@@ -116,10 +130,29 @@ class DocumentsView:
                             alignment=ft.alignment.center_left
                         )
                     ),
-                    ft.DataCell(
+                    ft.DataCell(  # QR
                         ft.Container(
-                            content=ft.Text("-"),
-                            width=100
+                            content=ft.PopupMenuButton(
+                                items=[
+                                    ft.PopupMenuItem(
+                                        text="Ver QR",
+                                        icon=ft.Icons.QR_CODE,
+                                        on_click=lambda e, doc=doc: self.page.go(f'/qr/{doc.id}')
+                                    ),
+                                    ft.PopupMenuItem(
+                                        text='Ver Documento' if doc.archivo else 'Documento no disponible',
+                                        icon=ft.Icons.CONTENT_PASTE_SEARCH,
+                                        on_click=(lambda e, d=doc: self.page.go(f'/output_pdf/{d.id}')) if doc.archivo else None
+                                    ),
+                                    ft.PopupMenuItem(
+                                        text="Eliminar Documento",
+                                        icon=ft.Icons.DELETE,
+                                        on_click=lambda e, doc=doc: self._delete_document(doc)
+                                    )
+                                ],
+                                icon=ft.Icons.MORE_VERT
+                            ),
+                            alignment=ft.alignment.center
                         )
                     ),
                 ]
@@ -132,10 +165,11 @@ class DocumentsView:
                 controls=[
                     ft.DataTable(
                         columns=[
+                            ft.DataColumn(ft.Text("Creador")),
                             ft.DataColumn(ft.Text("Contratante")),
                             ft.DataColumn(ft.Text("Origen")),
                             ft.DataColumn(ft.Text("Destino")),
-                            ft.DataColumn(ft.Text("QR")),
+                            ft.DataColumn(ft.Text("Acciones")),
                         ],
                         rows=rows,
                         column_spacing=20,

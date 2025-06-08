@@ -32,19 +32,21 @@ class UsersView:
                     ),
                     self.theme_button
                 ]
-                # Aquí NO ponemos scroll, porque AppBar no lo soporta
             ),
             controls=[
                 ft.Column(
                     controls=[
                         self._build_search_box(),
                         ft.Container(
-                            content=self.table,
+                            content=ft.Row(
+                                controls=[self.table],
+                                scroll="auto"  # Permite scroll horizontal
+                            ),
                             expand=True,
                             padding=10,
                             margin=ft.margin.symmetric(horizontal=10),
-                            height=600,  # Altura fija para activar scroll si se supera
-                            width=1000,
+                            height=600,
+                            width=float("inf"),  # Ocupa todo el ancho disponible
                             alignment=ft.alignment.center,
                             bgcolor=ft.Colors.WHITE,
                             border_radius=10,
@@ -56,7 +58,7 @@ class UsersView:
                     alignment=ft.MainAxisAlignment.START,
                     horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                     spacing=20,
-                    scroll=True,  # Scroll activado para esta columna
+                    scroll=True,  # Scroll vertical si la columna es muy larga
                     expand=True
                 )
             ],
@@ -108,7 +110,7 @@ class UsersView:
             hint_text="Nombre, apellido o email",
             value=self.search_term,
             width=350,
-            prefix_icon=ft.Icons.SEARCH,  # Aquí también cambié para evitar el warning
+            prefix_icon=ft.Icons.SEARCH,
             on_change=self._filter_users
         )
 
@@ -142,7 +144,6 @@ class UsersView:
         self.page.dialog = self.dialog
         self.dialog.open = True
         self.page.update()
-
 
     def _build_bottom_appbar(self):
         return ft.BottomAppBar(

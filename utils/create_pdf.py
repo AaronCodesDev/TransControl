@@ -3,7 +3,8 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.utils import ImageReader
 import os
 
-def rellenar_pdf_con_fondo(datos, fondo_path="assets/documento_control.png", salida_path="output_pdf/documento_final.pdf"):
+def rellenar_pdf_con_fondo(datos, fondo_path="assets/documento_control.png",
+                           salida_path="output_pdf/documento_final.pdf"):
     os.makedirs(os.path.dirname(salida_path), exist_ok=True)
     
     c = canvas.Canvas(salida_path, pagesize=A4)
