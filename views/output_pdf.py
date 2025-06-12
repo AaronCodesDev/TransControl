@@ -1,4 +1,5 @@
 import os
+import base64
 import flet as ft
 from database import SessionLocal
 from database.models import Documentos
@@ -10,6 +11,11 @@ def pdf_to_pngs(pdf_path, output_folder):
     for i, image in enumerate(images):
         output_file = os.path.join(output_folder, f"page_{i+1}.png")
         image.save(output_file, 'PNG')
+
+def image_to_base64(path):
+    with open(path, "rb") as f:
+        encoded = base64.b64encode(f.read()).decode("utf-8")
+    return f"data:image/png;base64,{encoded}"
 
 class OutputPDFView:
     def __init__(self, page: ft.Page, theme_button: ft.Control, doc_id: int):
@@ -38,25 +44,32 @@ class OutputPDFView:
             pdf_to_pngs(pdf_path, output_folder)
 
         image_files = sorted(os.listdir(output_folder))
-
-        controls = [
-            ft.AppBar(title=ft.Text("Vista Documento"), actions=[self.theme_button]),
-            ft.Text(f"Documento: {doc.archivo}"),
-            ft.Text("Mantén pulsada la imagen para descargarla (en móvil)."),
-        ]
+        image_controls = []
 
         for img_file in image_files:
-            image_path = f"/output_pdf/{self.doc_id}/{img_file}"
-            controls.append(ft.Image(src=image_path, width=300))
-            controls.append(
-                ft.ElevatedButton(
-                    f"Abrir {img_file}",
-                    on_click=lambda e, url=image_path: self.page.launch_url(url)
+            image_path = os.path.join(output_folder, img_file)
+            image_base64 = image_to_base64(image_path)
+            image_controls.append(
+                ft.Container(
+                    content=ft.Image(
+                        src=image_base64,
+                        fit=ft.ImageFit.CONTAIN,
+                        expand=True
+                    ),
+                    padding=10
                 )
             )
 
-        controls.append(
-            ft.ElevatedButton("Volver", on_click=lambda e: self.page.go("/documents"))
+        return ft.View(
+            route=f"/output_pdf/{self.doc_id}",
+            controls=[
+                ft.AppBar(title=ft.Text("Vista Documento"), actions=[self.theme_button]),
+                ft.Text(f"Documento: {doc.archivo}"),
+                ft.Column(
+                    controls=image_controls,
+                    scroll=ft.ScrollMode.AUTO,
+                    expand=True
+                ),
+                ft.ElevatedButton("Volver", on_click=lambda e: self.page.go("/documents"))
+            ]
         )
-
-        return ft.View(route=f"/output_pdf/{self.doc_id}", controls=controls)

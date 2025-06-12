@@ -41,16 +41,19 @@ class CompaniesView:
         return ft.View(
             route='/companies',
             controls=[
-                ft.Column(
-                    controls=[
-                        self._build_search_box(),
-                        self.table,
-                        self.dialog
-                    ],
-                    alignment=ft.MainAxisAlignment.START,
-                    horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                    spacing=20,
-                    scroll=True,
+                ft.Container(
+                    content=ft.Column(
+                        controls=[
+                            self._build_search_box(),
+                            self.table,
+                            self.dialog
+                        ],
+                        alignment=ft.MainAxisAlignment.START,
+                        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                        spacing=20,
+                    ),
+                    alignment=ft.alignment.top_center,
+                    padding=ft.padding.only(top=40),
                     expand=True
                 )
             ],

@@ -30,27 +30,31 @@ class DocumentsView:
                 tooltip='Panel de administración',
                 on_click=lambda e: self.page.go('/admin'),
             )
+        actions = [self.theme_button]
         if admin_button:
-            actions = [admin_button, self.theme_button]
-        else:
-            actions = [self.theme_button]
-            
+            actions.insert(0, admin_button)
+
         self.table.controls.clear()
         self.table.controls.append(self._build_documents_list())
 
         return ft.View(
             route='/documents',
             controls=[
-                ft.Column(
-                    controls=[
-                        self._build_search_box(),
-                        self.table,
-                        self.dialog
-                    ],
-                    alignment=ft.MainAxisAlignment.START,
-                    horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                    spacing=20,
-                    scroll=True,
+                ft.Container(
+                    content=ft.Column(
+                        controls=[
+                            self._build_search_box(),
+                            self.table,
+                            self.dialog
+                        ],
+                        alignment=ft.MainAxisAlignment.START,
+                        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                        spacing=20,
+                        scroll=True,
+                        expand=True
+                    ),
+                    alignment=ft.alignment.top_center,
+                    padding=ft.padding.only(top=40),
                     expand=True
                 )
             ],
@@ -66,19 +70,21 @@ class DocumentsView:
 
     def _load_documents(self):
         db = SessionLocal()
-        self.documents = db.query(Documentos).options(
-            joinedload(Documentos.contratante),
-            joinedload(Documentos.transportista),
-            joinedload(Documentos.usuario)
-        ).order_by(desc(Documentos.fecha_transporte)).all()
-        self.filtered_documents = self.documents
-        db.close()
+        try:
+            self.documents = db.query(Documentos).options(
+                joinedload(Documentos.contratante),
+                joinedload(Documentos.transportista),
+                joinedload(Documentos.usuario)
+            ).order_by(desc(Documentos.fecha_transporte)).all()
+            self.filtered_documents = self.documents
+        finally:
+            db.close()
 
     def _build_documents_list(self):
         rows = [
             ft.DataRow(
                 cells=[
-                    ft.DataCell(  # Creador
+                    ft.DataCell(
                         ft.Container(
                             content=ft.Text(
                                 doc.usuario.email if doc.usuario else 'Desconocido',
@@ -92,7 +98,7 @@ class DocumentsView:
                             alignment=ft.alignment.center_left
                         )
                     ),
-                    ft.DataCell(  # Contratante
+                    ft.DataCell(
                         ft.Container(
                             content=ft.Text(
                                 doc.contratante.nombre if doc.contratante else 'Sin asignar',
@@ -106,7 +112,7 @@ class DocumentsView:
                             alignment=ft.alignment.center_left
                         )
                     ),
-                    ft.DataCell(  # Origen
+                    ft.DataCell(
                         ft.Container(
                             content=ft.Text(
                                 doc.lugar_origen,
@@ -118,7 +124,7 @@ class DocumentsView:
                             alignment=ft.alignment.center_left
                         )
                     ),
-                    ft.DataCell(  # Destino
+                    ft.DataCell(
                         ft.Container(
                             content=ft.Text(
                                 doc.lugar_destino,
@@ -130,7 +136,7 @@ class DocumentsView:
                             alignment=ft.alignment.center_left
                         )
                     ),
-                    ft.DataCell(  # QR
+                    ft.DataCell(
                         ft.Container(
                             content=ft.PopupMenuButton(
                                 items=[
@@ -160,20 +166,23 @@ class DocumentsView:
             for doc in self.filtered_documents
         ]
 
+        columns = [
+            ft.DataColumn(ft.Text("Creador")),
+            ft.DataColumn(ft.Text("Contratante")),
+            ft.DataColumn(ft.Text("Origen")),
+            ft.DataColumn(ft.Text("Destino")),
+            ft.DataColumn(ft.Text("Acciones")),
+        ]
+
         return ft.Container(
             content=ft.Row(
                 controls=[
                     ft.DataTable(
-                        columns=[
-                            ft.DataColumn(ft.Text("Creador")),
-                            ft.DataColumn(ft.Text("Contratante")),
-                            ft.DataColumn(ft.Text("Origen")),
-                            ft.DataColumn(ft.Text("Destino")),
-                            ft.DataColumn(ft.Text("Acciones")),
-                        ],
+                        columns=columns,
                         rows=rows,
                         column_spacing=20,
-                        data_row_max_height=56
+                        data_row_max_height=56,
+                        horizontal_margin=10,
                     )
                 ],
                 scroll="auto"
@@ -183,8 +192,8 @@ class DocumentsView:
 
     def _build_search_box(self):
         return ft.TextField(
-            label='Buscar Contratante',
-            hint_text='Nombre del contratante',
+            label="Buscar documento",
+            hint_text="Buscar por contratante o lugar",
             value=self.search_term,
             width=300,
             prefix_icon=ft.Icons.SEARCH,
@@ -193,18 +202,36 @@ class DocumentsView:
 
     def _filter_documents(self, e):
         self.search_term = e.control.value
-        term = self.search_term.lower()
-
+        search_term = self.search_term.lower()
         self.filtered_documents = [
-            d for d in self.documents
-            if term in str(d.empresas_id_contratante).lower()
-            or term in d.lugar_origen.lower()
-            or term in d.lugar_destino.lower()
-            or term in (d.contratante.nombre.lower() if d.contratante else "")
-        ] if term else self.documents
+            d for d in self.documents if
+            search_term in (d.contratante.nombre.lower() if d.contratante else '') or
+            search_term in d.lugar_origen.lower() or
+            search_term in d.lugar_destino.lower()
+        ] if search_term else self.documents
 
         self.table.controls.clear()
         self.table.controls.append(self._build_documents_list())
+        self.page.update()
+
+    def _delete_document(self, doc):
+        session = SessionLocal()
+        try:
+            document = session.query(Documentos).filter(Documentos.id == doc.id).first()
+            if document:
+                session.delete(document)
+                session.commit()
+                print(f'Documento {doc.id} eliminado correctamente')
+                self._load_documents()
+                self.table.controls.clear()
+                self.table.controls.append(self._build_documents_list())
+            else:
+                print(f'Documento con ID {doc.id} no encontrado.')
+        except Exception as ex:
+            print(f'Error al eliminar documento: {ex}')
+            session.rollback()
+        finally:
+            session.close()
         self.page.update()
 
     def _build_bottom_appbar(self):
