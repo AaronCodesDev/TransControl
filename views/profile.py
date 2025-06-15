@@ -84,7 +84,7 @@ class ProfileView:
             appbar=ft.AppBar(
                 title=ft.Text(f'Perfil - {self.user.nombre}'),
                 center_title=True,
-                bgcolor=ft.Colors.GREEN_300,
+                bgcolor=ft.Colors.GREEN_700,
                 automatically_imply_leading=False,
                 actions=actions,
             ),
@@ -161,7 +161,7 @@ class ProfileView:
 
     def _build_bottom_appbar(self):
         return ft.BottomAppBar(
-            bgcolor=ft.Colors.GREEN_300,
+            bgcolor=ft.Colors.GREEN_700,
             shape=ft.NotchShape.CIRCULAR,
             elevation=8,
             content=ft.Row(

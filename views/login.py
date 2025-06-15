@@ -85,8 +85,8 @@ class LoginView:
 
         login_btn = ft.ElevatedButton('Iniciar Sesión', on_click=login)
 
-        logo_patch = 'assets/logo_dark.png' if self.page.theme_mode == ft.ThemeMode.DARK else 'logo_light.png'
-        logo = ft.Image(src=logo_patch, width=150, height=150)
+        logo_patch = 'assets/logo.png' if self.page.theme_mode == ft.ThemeMode.DARK else 'logo.png'
+        logo = ft.Image(src=logo_patch, width=250, height=250)
 
         return ft.View(
             route='/login',

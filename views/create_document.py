@@ -36,7 +36,7 @@ class CreateDocumentView:
                 ft.AppBar(
                     title=ft.Text('Nuevo Documento'),
                     center_title=True,
-                    bgcolor=ft.Colors.GREEN_300,
+                    bgcolor=ft.Colors.GREEN_700,
                     automatically_imply_leading=False,
                     actions=[self.theme_button]
                 ),

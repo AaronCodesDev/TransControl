@@ -30,7 +30,7 @@ class CreateCompanyView:
             controls=[
                 ft.AppBar(
                     title=ft.Text("Registrar Empresa"),
-                    bgcolor=ft.Colors.GREEN_300,
+                    bgcolor=ft.Colors.GREEN_700,
                     center_title=True,
                     actions=[self.theme_button]
                 ),

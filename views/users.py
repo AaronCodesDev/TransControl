@@ -21,7 +21,7 @@ class UsersView:
             appbar=ft.AppBar(
                 title=ft.Text('Usuarios Registrados'),
                 center_title=True,
-                bgcolor=ft.Colors.GREEN_300,
+                bgcolor=ft.Colors.GREEN_700,
                 automatically_imply_leading=False,
                 actions=[
                     ft.IconButton(
@@ -74,28 +74,28 @@ class UsersView:
     def _build_users_list(self):
         return ft.DataTable(
             columns=[
-                ft.DataColumn(ft.Text("ID")),
-                ft.DataColumn(ft.Text("Nombre")),
-                ft.DataColumn(ft.Text("Apellido")),
-                ft.DataColumn(ft.Text("Dirección")),
-                ft.DataColumn(ft.Text("Ciudad")),
-                ft.DataColumn(ft.Text("Provincia")),
-                ft.DataColumn(ft.Text("C P")),
-                ft.DataColumn(ft.Text("Teléfono")),
-                ft.DataColumn(ft.Text("Email")),
+                ft.DataColumn(ft.Text("ID", color=ft.Colors.BLACK)),
+                ft.DataColumn(ft.Text("Nombre", color=ft.Colors.BLACK)),
+                ft.DataColumn(ft.Text("Apellido", color=ft.Colors.BLACK)),
+                ft.DataColumn(ft.Text("Dirección", color=ft.Colors.BLACK)),
+                ft.DataColumn(ft.Text("Ciudad", color=ft.Colors.BLACK)),
+                ft.DataColumn(ft.Text("Provincia", color=ft.Colors.BLACK)),
+                ft.DataColumn(ft.Text("C P", color=ft.Colors.BLACK)),
+                ft.DataColumn(ft.Text("Teléfono", color=ft.Colors.BLACK)),
+                ft.DataColumn(ft.Text("Email", color=ft.Colors.BLACK)),
             ],
             rows=[
                 ft.DataRow(
                     cells=[
-                        ft.DataCell(ft.Text(str(u.id), max_lines=1, overflow='ellipsis')),
-                        ft.DataCell(ft.Text(u.nombre, max_lines=1, overflow='ellipsis'), on_tap=self._on_user_click, data=u),
-                        ft.DataCell(ft.Text(u.apellido, max_lines=1, overflow='ellipsis')),
-                        ft.DataCell(ft.Text(u.direccion, max_lines=1, overflow='ellipsis') if hasattr(u, 'direccion') else ft.Text('')),
-                        ft.DataCell(ft.Text(u.ciudad, max_lines=1, overflow='ellipsis') if hasattr(u, 'ciudad') else ft.Text('')),
-                        ft.DataCell(ft.Text(u.provincia, max_lines=1, overflow='ellipsis') if hasattr(u, 'provincia') else ft.Text('')),
-                        ft.DataCell(ft.Text(u.codigo_postal, max_lines=1, overflow='ellipsis') if hasattr(u, 'codigo_postal') else ft.Text('')),
-                        ft.DataCell(ft.Text(u.telefono, max_lines=1, overflow='ellipsis') if hasattr(u, 'telefono') else ft.Text('')),
-                        ft.DataCell(ft.Text(u.email, max_lines=1, overflow='ellipsis')),
+                        ft.DataCell(ft.Text(str(u.id), max_lines=1, overflow='ellipsis', color=ft.Colors.BLACK)),
+                        ft.DataCell(ft.Text(u.nombre, max_lines=1, overflow='ellipsis', color=ft.Colors.BLACK), on_tap=self._on_user_click, data=u),
+                        ft.DataCell(ft.Text(u.apellido, max_lines=1, overflow='ellipsis', color=ft.Colors.BLACK)),
+                        ft.DataCell(ft.Text(u.direccion, max_lines=1, overflow='ellipsis', color=ft.Colors.BLACK) if hasattr(u, 'direccion') else ft.Text('')),
+                        ft.DataCell(ft.Text(u.ciudad, max_lines=1, overflow='ellipsis', color=ft.Colors.BLACK) if hasattr(u, 'ciudad') else ft.Text('')),
+                        ft.DataCell(ft.Text(u.provincia, max_lines=1, overflow='ellipsis', color=ft.Colors.BLACK) if hasattr(u, 'provincia') else ft.Text('')),
+                        ft.DataCell(ft.Text(u.codigo_postal, max_lines=1, overflow='ellipsis', color=ft.Colors.BLACK) if hasattr(u, 'codigo_postal') else ft.Text('')),
+                        ft.DataCell(ft.Text(u.telefono, max_lines=1, overflow='ellipsis', color=ft.Colors.BLACK) if hasattr(u, 'telefono') else ft.Text('')),
+                        ft.DataCell(ft.Text(u.email, max_lines=1, overflow='ellipsis', color=ft.Colors.BLACK)),
                     ]
                 )
                 for u in self.filtered_users
@@ -111,7 +111,8 @@ class UsersView:
             value=self.search_term,
             width=350,
             prefix_icon=ft.Icons.SEARCH,
-            on_change=self._filter_users
+            on_change=self._filter_users,
+            text_style=ft.TextStyle(color=ft.Colors.BLACK)
         )
 
     def _filter_users(self, e):
@@ -147,7 +148,7 @@ class UsersView:
 
     def _build_bottom_appbar(self):
         return ft.BottomAppBar(
-            bgcolor=ft.Colors.GREEN_300,
+            bgcolor=ft.Colors.GREEN_700,
             shape=ft.NotchShape.CIRCULAR,
             elevation=8,
             content=ft.Row(

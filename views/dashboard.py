@@ -60,7 +60,7 @@ class DashboardView:
             appbar=ft.AppBar(
                 title=ft.Text(f'Dashboard - {self.user.rol.capitalize()}'),
                 center_title=True,
-                bgcolor=ft.Colors.GREEN_300,
+                bgcolor=ft.Colors.GREEN_700,
                 automatically_imply_leading=False,
                 actions=actions,
             ),
@@ -195,7 +195,7 @@ class DashboardView:
 
     def _build_bottom_appbar(self):
         return ft.BottomAppBar(
-            bgcolor=ft.Colors.GREEN_300,
+            bgcolor=ft.Colors.GREEN_700,
             shape=ft.NotchShape.CIRCULAR,
             elevation=8,
             content=ft.Row(
