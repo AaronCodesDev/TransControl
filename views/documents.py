@@ -78,22 +78,26 @@ class DocumentsView:
                     joinedload(Documentos.transportista),
                     joinedload(Documentos.usuario)
                 ).order_by(desc(Documentos.fecha_transporte))
-                
+
                 if getattr(self.user, 'rol', '') != 'admin':
-                        query = query.filter(Documentos.usuarios_id == self.user.id)
+                    query = query.filter(Documentos.usuarios_id == self.user.id)
 
                 self.documents = query.all()
             else:
                 self.documents = []
-                
+
             self.filtered_documents = self.documents
         finally:
             db.close()
 
     def _build_documents_list(self):
-        rows = [
-            ft.DataRow(
-                cells=[
+        rows = []
+        for doc in self.filtered_documents:
+            cells = []
+
+            # Si es admin, mostramos la columna "Creador"
+            if self.user and getattr(self.user, 'rol', '') == 'admin':
+                cells.append(
                     ft.DataCell(
                         ft.Container(
                             content=ft.Text(
@@ -107,82 +111,89 @@ class DocumentsView:
                             width=180,
                             alignment=ft.alignment.center_left
                         )
-                    ),
-                    ft.DataCell(
-                        ft.Container(
-                            content=ft.Text(
-                                doc.contratante.nombre if doc.contratante else 'Sin asignar',
-                                size=14,
-                                overflow="ellipsis",
-                                max_lines=1,
-                                no_wrap=True,
-                                text_align=ft.TextAlign.CENTER
-                            ),
-                            width=150,
-                            alignment=ft.alignment.center_left
-                        )
-                    ),
-                    ft.DataCell(
-                        ft.Container(
-                            content=ft.Text(
-                                doc.lugar_origen,
-                                size=14,
-                                overflow="ellipsis",
-                                text_align=ft.TextAlign.CENTER
-                            ),
-                            width=150,
-                            alignment=ft.alignment.center_left
-                        )
-                    ),
-                    ft.DataCell(
-                        ft.Container(
-                            content=ft.Text(
-                                doc.lugar_destino,
-                                size=14,
-                                overflow="ellipsis",
-                                text_align=ft.TextAlign.CENTER
-                            ),
-                            width=150,
-                            alignment=ft.alignment.center_left
-                        )
-                    ),
-                    ft.DataCell(
-                        ft.Container(
-                            content=ft.PopupMenuButton(
-                                items=[
-                                    ft.PopupMenuItem(
-                                        text="Ver QR",
-                                        icon=ft.Icons.QR_CODE,
-                                        on_click=lambda e, doc=doc: self.page.go(f'/qr/{doc.id}')
-                                    ),
-                                    ft.PopupMenuItem(
-                                        text='Ver Documento' if doc.archivo else 'Documento no disponible',
-                                        icon=ft.Icons.CONTENT_PASTE_SEARCH,
-                                        on_click=(lambda e, d=doc: self.page.go(f'/output_pdf/{d.id}')) if doc.archivo else None
-                                    ),
-                                    ft.PopupMenuItem(
-                                        text="Eliminar Documento",
-                                        icon=ft.Icons.DELETE,
-                                        on_click=lambda e, doc=doc: self._delete_document(doc)
-                                    )
-                                ],
-                                icon=ft.Icons.MORE_VERT
-                            ),
-                            alignment=ft.alignment.center
-                        )
-                    ),
-                ]
-            )
-            for doc in self.filtered_documents
-        ]
+                    )
+                )
 
-        columns = [
-            ft.DataColumn(ft.Text("Creador")),
+            # Columnas comunes
+            cells.extend([
+                ft.DataCell(
+                    ft.Container(
+                        content=ft.Text(
+                            doc.contratante.nombre if doc.contratante else 'Sin asignar',
+                            size=14,
+                            overflow="ellipsis",
+                            max_lines=1,
+                            no_wrap=True,
+                            text_align=ft.TextAlign.CENTER
+                        ),
+                        width=150,
+                        alignment=ft.alignment.center_left
+                    )
+                ),
+                ft.DataCell(
+                    ft.Container(
+                        content=ft.Text(
+                            doc.lugar_origen,
+                            size=14,
+                            overflow="ellipsis",
+                            text_align=ft.TextAlign.CENTER
+                        ),
+                        width=150,
+                        alignment=ft.alignment.center_left
+                    )
+                ),
+                ft.DataCell(
+                    ft.Container(
+                        content=ft.Text(
+                            doc.lugar_destino,
+                            size=14,
+                            overflow="ellipsis",
+                            text_align=ft.TextAlign.CENTER
+                        ),
+                        width=150,
+                        alignment=ft.alignment.center_left
+                    )
+                ),
+                ft.DataCell(
+                    ft.Container(
+                        content=ft.PopupMenuButton(
+                            items=[
+                                ft.PopupMenuItem(
+                                    text="Ver QR",
+                                    icon=ft.Icons.QR_CODE,
+                                    on_click=lambda e, doc=doc: self.page.go(f'/qr/{doc.id}')
+                                ),
+                                ft.PopupMenuItem(
+                                    text='Ver Documento' if doc.archivo else 'Documento no disponible',
+                                    icon=ft.Icons.CONTENT_PASTE_SEARCH,
+                                    on_click=(lambda e, d=doc: self.page.go(f'/output_pdf/{d.id}')) if doc.archivo else lambda e: None
+                                ),
+                                ft.PopupMenuItem(
+                                    text="Eliminar Documento",
+                                    icon=ft.Icons.DELETE,
+                                    on_click=lambda e, doc=doc: self._delete_document(doc)
+                                )
+                            ],
+                            icon=ft.Icons.MORE_VERT
+                        ),
+                        alignment=ft.alignment.center
+                    )
+                ),
+            ])
+
+            rows.append(ft.DataRow(cells=cells))
+
+        # Columnas según rol
+        columns = []
+        if self.user and getattr(self.user, 'rol', '') == 'admin':
+            columns.append(ft.DataColumn(ft.Text("Creador")))
+
+        columns.extend([
             ft.DataColumn(ft.Text("Contratante")),
             ft.DataColumn(ft.Text("Origen")),
             ft.DataColumn(ft.Text("Destino")),
             ft.DataColumn(ft.Text("Acciones")),
-        ]
+        ])
 
         return ft.Container(
             content=ft.Row(

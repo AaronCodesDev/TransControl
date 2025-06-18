@@ -3,9 +3,9 @@ from datetime import date
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 from database.models import Documentos, Empresas, Usuario
-import asyncio
+import re
 from utils.create_pdf import rellenar_pdf_con_fondo
-import re 
+import time
 
 class CreateDocumentView:
     def __init__(self, page, theme_button, force_route, user):
@@ -28,6 +28,8 @@ class CreateDocumentView:
         self.matricula_remolque_input = ft.TextField(label='Matrícula Semiremolque')
         self.naturaleza_input = ft.TextField(label='Naturaleza Carga')
         self.peso_input = ft.TextField(label='Peso en Kg')
+        self.firma_cargador_input = ft.TextField(label='Firma Empresa')
+        self.firma_transportista_input = ft.TextField(label='Firma Transportista')      
         self.message = ft.Text(value='', visible=False)
 
         return ft.View(
@@ -50,6 +52,8 @@ class CreateDocumentView:
                             self.matricula_remolque_input,
                             self.naturaleza_input,
                             self.peso_input,
+                            self.firma_cargador_input,
+                            self.firma_transportista_input,
                             ft.Row(
                                 controls=[
                                     ft.ElevatedButton('Guardar', on_click=self.save_document),
@@ -82,23 +86,19 @@ class CreateDocumentView:
                 self.empresas = session.query(Empresas).filter(Empresas.usuario_id == self.user.id).all()
         finally:
             session.close()
-        
-        self.empresas = session.query(Empresas).filter(Empresas.usuario_id == self.page.user.id).all()
-        session.close()
 
-    async def save_document(self, e):
+    def save_document(self, e):
+        engine = create_engine('sqlite:///database/transcontrol.db')
+        Session = sessionmaker(bind=engine)
+        session = Session()
+
         try:
-            engine = create_engine('sqlite:///database/transcontrol.db')
-            Session = sessionmaker(bind=engine)
-            session = Session()
-
             usuario = session.query(Usuario).filter_by(id=self.page.user.id).first()
 
             if not self.empresas_dropdown.value:
                 self.message.value = "❌ Debes seleccionar una empresa antes de guardar."
                 self.message.visible = True
                 self.page.update()
-                session.close()
                 return
 
             empresa_id = int(self.empresas_dropdown.value)
@@ -108,7 +108,15 @@ class CreateDocumentView:
                 self.message.value = "❌ Debes completar tu perfil antes de generar un documento."
                 self.message.visible = True
                 self.page.update()
-                session.close()
+                return
+
+            peso_val = 0
+            try:
+                peso_val = float(self.peso_input.value) if self.peso_input.value else 0
+            except ValueError:
+                self.message.value = "❌ El peso debe ser un número válido."
+                self.message.visible = True
+                self.page.update()
                 return
 
             doc = Documentos(
@@ -122,15 +130,13 @@ class CreateDocumentView:
                 matricula_vehiculo=self.matricula_input.value,
                 matricula_semiremolque=self.matricula_remolque_input.value,
                 naturaleza_carga=self.naturaleza_input.value,
-                peso=float(self.peso_input.value),
-                firma_cargador='Cargador',
-                firma_transportista='Transportista'
+                peso=peso_val,
+                firma_cargador=self.firma_cargador_input.value,
+                firma_transportista=self.firma_transportista_input.value
             )
 
             session.add(doc)
             session.commit()
-
-            print(f"Empresa seleccionada: {empresa.nombre} (ID: {empresa.id})")
 
             datos = {
                 'fecha': doc.fecha_creacion.strftime('%d/%m/%Y'),
@@ -151,26 +157,33 @@ class CreateDocumentView:
                 'naturaleza': doc.naturaleza_carga,
                 'peso': doc.peso,
                 'matricula': doc.matricula_vehiculo,
-                'matricula_remolque': doc.matricula_semiremolque
+                'matricula_remolque': doc.matricula_semiremolque,
+                'firma_cargador': doc.firma_cargador,
+                'firma_transportista': doc.firma_transportista
             }
+
             correo_limpio = re.sub(r'[^\w\-_.]', '_', usuario.email)
             archivo_nombre = f"documento_{correo_limpio}_{doc.id}.pdf"
-            salida_pdf = f"assets/docs/{archivo_nombre}"  # asegurarte de que esta ruta exista
+            salida_pdf = f"assets/docs/{archivo_nombre}"
             rellenar_pdf_con_fondo(datos, salida_path=salida_pdf)
 
-            doc.archivo = archivo_nombre  # Guarda el nombre del archivo en la base de datos
+            doc.archivo = archivo_nombre
             session.commit()
 
             self.message.value = '✅ Documento creado correctamente'
             self.message.visible = True
+            self.page.update()
 
-            await asyncio.sleep(1)
-            await self.page.go('/documents')
+            time.sleep(1)
+            self.page.go('/documents')
 
         except Exception as err:
-            self.message.value = f'❌ Error: {err}'
+            import traceback
+            error_msg = f'❌ Error: {err}\n{traceback.format_exc()}'
+            print(error_msg)
+            self.message.value = error_msg
             self.message.visible = True
+            self.page.update()
 
         finally:
             session.close()
-            self.page.update()
