@@ -77,13 +77,23 @@ def delete_user(db: Session, user_id: int):
 ### CRUD PARA DOCUMENTACION ###
 
 # Obtener el conteo de documentos
-def get_document_count(db: Session):
-    return db.query(Documentos).count()
+def get_document_count(db: Session, user: Usuario = None):
+    query = db.query(Documentos)
+    if user and not getattr(user, 'is_admin', False):
+        query = query.filter(Documentos.usuarios_id == user.id)
+    return query.count()
 
 # Obtener todas las rutas de transporte en una fecha específica
-def get_daily_routes(db: Session, fecha: str):
-    return db.query(Documentos).filter(Documentos.fecha_creacion == fecha).all()
+def get_daily_routes(db: Session, fecha: str, user: Usuario = None):
+    query = db.query(Documentos).filter(Documentos.fecha_creacion == fecha)
+    if user and not getattr(user, 'is_admin', False):
+        query = query.filter(Documentos.usuarios_id == user.id)
+    return query.all()
 
+
+from datetime import datetime
+    
+    
 ### CRUD PARA EMPRESAS ###
 
 # Obtener total de empresas registradas

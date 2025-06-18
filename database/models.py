@@ -1,7 +1,9 @@
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Float, Date, Boolean
-from sqlalchemy.orm import relationship, sessionmaker
-from database.db import Base , SessionLocal
+from sqlalchemy.orm import relationship
+from database.db import Base
 from datetime import datetime
+
+
 class Usuario(Base):
     __tablename__ = 'usuarios'
 
@@ -20,12 +22,11 @@ class Usuario(Base):
     rol = Column(String(20))
     usuario_id = Column(Integer, ForeignKey('usuarios.id'), nullable=True)  # Para relaciones jerárquicas
     is_admin = Column(Boolean, default=False)
-        
-    empresas = relationship('Empresas', back_populates='usuario')
-    empresas = relationship('Empresas', back_populates='creador')
 
+    empresas = relationship('Empresas', back_populates='usuario')
     documentos = relationship('Documentos', back_populates='usuario')
-    
+
+
 class Empresas(Base):
     __tablename__ = 'empresas'
 
@@ -38,27 +39,25 @@ class Empresas(Base):
     cif = Column(String(20), unique=True, index=True)
     telefono = Column(String(30))
     email = Column(String(100), unique=True, index=True)
-    usuario_id = Column(Integer, ForeignKey('usuarios.id'),nullable=False)
+    usuario_id = Column(Integer, ForeignKey('usuarios.id'), nullable=False)
     fecha_creacion = Column(DateTime)
-        
+
     usuario = relationship('Usuario', back_populates='empresas')
-    
-    creador = relationship('Usuario', back_populates='empresas')
-    
-    
-    # Crear relaciones entre documentos y empresas
+
+    # Documentos relacionados
     documentos_como_transportista = relationship(
         'Documentos',
         foreign_keys='Documentos.empresas_id_transportista',
         back_populates='transportista'
-        )
-    
+    )
+
     documentos_como_contratante = relationship(
         'Documentos',
         foreign_keys='Documentos.empresas_id_contratante',
         back_populates='contratante'
     )
-    
+
+
 class Documentos(Base):
     __tablename__ = 'documentos_control'
 
@@ -68,23 +67,26 @@ class Documentos(Base):
     empresas_id_contratante = Column(Integer, ForeignKey('empresas.id'))
     lugar_origen = Column(String(200), nullable=False)
     lugar_destino = Column(String(200), nullable=False)
-    fecha_transporte = Column(Date) #Fecha realizacion del transporte
-    fecha_creacion = Column(Date) # Fecha de creacion del documento
+    fecha_transporte = Column(Date)
+    fecha_creacion = Column(Date)
     matricula_vehiculo = Column(String(20), nullable=False)
     matricula_semiremolque = Column(String(20))
     naturaleza_carga = Column(String(200), nullable=False)
     peso = Column(Float, nullable=False)
-    firma_cargador = Column(String(100)) 
+    firma_cargador = Column(String(100))
     firma_transportista = Column(String(100))
-    archivo = Column(String(200), nullable=True)  # Ruta del archivo asociado al documento
-    
+    archivo = Column(String(200), nullable=True)
+
     usuario = relationship('Usuario', back_populates='documentos')
-    transportista = relationship('Empresas',
-                                    foreign_keys=[empresas_id_transportista],
-                                    back_populates='documentos_como_transportista'
+
+    transportista = relationship(
+        'Empresas',
+        foreign_keys=[empresas_id_transportista],
+        back_populates='documentos_como_transportista'
     )
-    
-    contratante = relationship('Empresas',
-                                    foreign_keys=[empresas_id_contratante],
-                                    back_populates='documentos_como_contratante'
-        )
+
+    contratante = relationship(
+        'Empresas',
+        foreign_keys=[empresas_id_contratante],
+        back_populates='documentos_como_contratante'
+    )

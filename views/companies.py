@@ -1,5 +1,6 @@
 import flet as ft
-from database.models import SessionLocal, Empresas
+from database.models import Empresas
+from database.db import SessionLocal
 from sqlalchemy.orm import joinedload
 
 class CompaniesView:
@@ -70,7 +71,7 @@ class CompaniesView:
     def _load_companies(self):
         db = SessionLocal()
         try:
-            query = db.query(Empresas).options(joinedload(Empresas.creador))
+            query = db.query(Empresas).options(joinedload(Empresas.usuario))
             if self.user and getattr(self.user, 'rol', '') == 'admin':
                 self.companies = query.all()
             elif self.user and hasattr(self.user, 'id'):
@@ -96,7 +97,7 @@ class CompaniesView:
         for c in self.filtered_companies:
             cells = []
             if self.user and getattr(self.user, 'rol', '') == 'admin':
-                cells.append(ft.DataCell(ft.Text(c.creador.email if c.creador else 'Desconocido')))
+                cells.append(ft.DataCell(ft.Text(c.usuario.email if c.usuario else 'Desconocido')))
 
             cells.extend([
                 ft.DataCell(ft.Text(c.nombre), on_tap=lambda e, c=c: self._on_company_click(e, c)),

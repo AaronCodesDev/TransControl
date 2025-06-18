@@ -1,5 +1,6 @@
 import flet as ft
-from database.models import SessionLocal, Documentos
+from database.models import Documentos
+from database.db import SessionLocal
 from sqlalchemy.orm import joinedload
 from sqlalchemy import desc
 
@@ -71,11 +72,20 @@ class DocumentsView:
     def _load_documents(self):
         db = SessionLocal()
         try:
-            self.documents = db.query(Documentos).options(
-                joinedload(Documentos.contratante),
-                joinedload(Documentos.transportista),
-                joinedload(Documentos.usuario)
-            ).order_by(desc(Documentos.fecha_transporte)).all()
+            if self.user:
+                query = db.query(Documentos).options(
+                    joinedload(Documentos.contratante),
+                    joinedload(Documentos.transportista),
+                    joinedload(Documentos.usuario)
+                ).order_by(desc(Documentos.fecha_transporte))
+                
+                if getattr(self.user, 'rol', '') != 'admin':
+                        query = query.filter(Documentos.usuarios_id == self.user.id)
+
+                self.documents = query.all()
+            else:
+                self.documents = []
+                
             self.filtered_documents = self.documents
         finally:
             db.close()

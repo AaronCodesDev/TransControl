@@ -13,8 +13,8 @@ class DashboardView:
         self.force_route = force_route
         self.menu_visible = False
 
-        self.total_routes = get_document_count(self.page.db)
-        self.daily_routes = len(get_daily_routes(self.page.db, date.today()))
+        self.total_routes = get_document_count(self.page.db, self.user)
+        self.daily_routes = len(get_daily_routes(self.page.db, date.today(), self.user))
         self.company_count = get_company_count(self.page.db, self.page.user)
 
         self.welcome_card = self._build_welcome_card()
@@ -210,7 +210,7 @@ class DashboardView:
         )
 
     def _update_stats(self):
-        self.total_routes = get_document_count(self.page.db)
-        self.daily_routes = len(get_daily_routes(self.page.db, datetime.now().date()))
-        self.company_count = get_company_count(self.page.db)
+        self.total_routes = get_document_count(self.page.db, self.user)
+        self.daily_routes = len(get_daily_routes(self.page.db, datetime.now().date(), self.user))
+        self.company_count = get_company_count(self.page.db, self.user)
         self.page.update()

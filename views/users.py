@@ -1,5 +1,6 @@
 import flet as ft
-from database.models import SessionLocal, Usuario
+from database.models import Usuario
+from database.db import SessionLocal
 
 class UsersView:
     def __init__(self, page: ft.Page, theme_button, force_route):

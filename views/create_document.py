@@ -74,7 +74,16 @@ class CreateDocumentView:
         engine = create_engine('sqlite:///database/transcontrol.db')
         Session = sessionmaker(bind=engine)
         session = Session()
-        self.empresas = session.query(Empresas).all()
+        
+        try:
+            if getattr(self.user, 'rol', '') == 'admin':
+                self.empresas = session.query(Empresas).all()
+            else:
+                self.empresas = session.query(Empresas).filter(Empresas.usuario_id == self.user.id).all()
+        finally:
+            session.close()
+        
+        self.empresas = session.query(Empresas).filter(Empresas.usuario_id == self.page.user.id).all()
         session.close()
 
     async def save_document(self, e):
