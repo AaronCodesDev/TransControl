@@ -209,72 +209,6 @@ class AdminDashboardView:
             self.page.overlay.append(self._build_fab_menu())
             self.page.update()
 
-        return ft.FloatingActionButton(
-            icon=ft.Icons.SEARCH,
-            bgcolor=ft.Colors.PRIMARY_CONTAINER,
-            shape=ft.CircleBorder(),
-            tooltip="Opciones rápidas",
-            width=64,
-            height=64,
-            on_click=toggle_menu,
-        )
-
-    def _build_fab_menu(self):
-        def open_create_document(e):
-            self._navigate_clean("/search_document")
-
-        def open_create_company(e):
-            self._navigate_clean("/search_company")
-
-        def open_search_user(e):
-            self._navigate_clean("/users")
-
-        if not self.menu_visible:
-            return ft.Container()
-
-        return ft.Stack(
-            expand=True,
-            controls=[
-                ft.Container(
-                    width=self.page.width,
-                    height=self.page.height,
-                    bgcolor=ft.Colors.BLACK54,
-                    on_click=self._hide_menu,
-                ),
-                ft.Container(
-                    content=ft.Column(
-                        controls=[
-                            ft.FloatingActionButton(
-                                icon=ft.Icons.DESCRIPTION,
-                                tooltip="Buscar documento",
-                                on_click=open_create_document,
-                                width=64,
-                                height=64,
-                            ),
-                            ft.FloatingActionButton(
-                                icon=ft.Icons.APARTMENT,
-                                tooltip="Buscar empresa",
-                                on_click=open_create_company,
-                                width=64,
-                                height=64,
-                            ),
-                            ft.FloatingActionButton(
-                                icon=ft.Icons.PERSON,
-                                tooltip="Buscar usuario",
-                                on_click=open_search_user,
-                                width=64,
-                                height=64,
-                            ),
-                        ],
-                        spacing=10,
-                        alignment=ft.MainAxisAlignment.END,
-                    ),
-                    left=(self.page.width - 64) / 2,
-                    bottom=110,
-                ),
-            ],
-        )
-
     def _hide_menu(self, e=None):
         self.menu_visible = False
         self.page.overlay.clear()
@@ -289,8 +223,6 @@ class AdminDashboardView:
     def _build_bottom_appbar(self):
         return ft.BottomAppBar(
             bgcolor=ft.Colors.BLUE_700,
-            shape=ft.NotchShape.CIRCULAR,
-            elevation=8,
             content=ft.Row(
                 controls=[
                     ft.IconButton(
