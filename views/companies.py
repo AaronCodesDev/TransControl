@@ -87,6 +87,9 @@ class CompaniesView:
             ft.DataColumn(ft.Text('Nombre')),
             ft.DataColumn(ft.Text('CIF')),
             ft.DataColumn(ft.Text('Dirección')),
+            ft.DataColumn(ft.Text('Ciudad')),
+            ft.DataColumn(ft.Text('Provincia')),
+            ft.DataColumn(ft.Text('Código Postal')),
             ft.DataColumn(ft.Text('Teléfono')),
             ft.DataColumn(ft.Text('Email')),
         ]
@@ -103,6 +106,9 @@ class CompaniesView:
                 ft.DataCell(ft.Text(c.nombre), on_tap=lambda e, c=c: self._on_company_click(e, c)),
                 ft.DataCell(ft.Text(c.cif)),
                 ft.DataCell(ft.Text(c.direccion)),
+                ft.DataCell(ft.Text(c.ciudad)),
+                ft.DataCell(ft.Text(c.provincia)),
+                ft.DataCell(ft.Text(c.codigo_postal)),
                 ft.DataCell(ft.Text(c.telefono)),
                 ft.DataCell(ft.Text(c.email)),
             ])
@@ -152,6 +158,9 @@ class CompaniesView:
             'nombre': ft.TextField(label="Nombre", value=c.nombre, disabled=True),
             'cif': ft.TextField(label="CIF", value=c.cif, disabled=True),
             'direccion': ft.TextField(label="Dirección", value=c.direccion, disabled=True),
+            'ciudad': ft.TextField(label="Ciudad", value=c.ciudad, disabled=True),
+            'provincia': ft.TextField(label="Provincia", value=c.provincia, disabled=True),
+            'codigo_postal': ft.TextField(label="Código Postal", value=c.codigo_postal, disabled=True),
             'telefono': ft.TextField(label="Teléfono", value=c.telefono, disabled=True),
             'email': ft.TextField(label="Email", value=c.email if hasattr(c, 'email') else '', disabled=True)
         }

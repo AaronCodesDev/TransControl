@@ -91,8 +91,8 @@ def main(page: ft.Page):
             view = AdminDashboardView(page, theme_button, force_route)
             page.views.append(view.build())
         
-        elif page.route == '/users':
-            view = UsersView(page, theme_button, force_route)
+        elif page.route == '/users':    
+            view = UsersView(page, theme_button, user=page.user)
             page.views.append(view.build())
             
         elif page.route.startswith('/output_pdf/'):
@@ -139,4 +139,4 @@ def main(page: ft.Page):
 
 
 if __name__ == '__main__':
-    ft.app(target=main, assets_dir="assets")
+    ft.app(target=main, assets_dir='assets', view=ft.AppView.WEB_BROWSER)
