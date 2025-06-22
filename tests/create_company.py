@@ -16,18 +16,8 @@ def create_company():
     session = Session()
 
     # Obtener o crear un usuario
-    usuario = session.query(Usuario).first()
-    if not usuario:
-        usuario = Usuario(
-            nombre=faker.first_name(),
-            apellido=faker.last_name(),
-            email=faker.email(),
-            password="hashed_password",  # Pon aquí algo de prueba o usa hash real
-            rol="admin"
-        )
-        session.add(usuario)
-        session.commit()
-
+    admin_user = session.query(Usuario).filter(Usuario.rol =='admin').first()
+    
     # Crear empresa asociada al usuario
     empresa = Empresas(
         nombre=faker.company(),
@@ -39,7 +29,7 @@ def create_company():
         telefono=faker.phone_number(),
         email=faker.email(),
         fecha_creacion=datetime.today().date(),
-        usuario_id=usuario.id  # ✅ Esta es la clave para evitar el error
+        usuario_id=admin_user.id
     )
 
     session.add(empresa)

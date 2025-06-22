@@ -79,6 +79,14 @@ class CreateCompanyView:
             self.message.visible = True
             self.page.update()
             return 
+
+        if '@' not in self.email.value or '.' not in self.email.value:
+            self.message.value = "⚠️ Email inválido."
+            self.message.color = ft.Colors.RED
+            self.message.visible = True
+            self.page.update()
+            return
+        
         
         try:
             engine = create_engine('sqlite:///database/transcontrol.db')

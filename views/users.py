@@ -38,22 +38,17 @@ class UsersView:
                 ft.Column(
                     controls=[
                         self._build_search_box(),
-                        ft.Container(
-                            content=ft.Row(
-                                controls=[self.table],
-                                scroll="auto"  # Permite scroll horizontal
-                            ),
+                        ft.Row(
+                            controls=[
+                                ft.Container(
+                                    content=self.table,
+                                    alignment=ft.alignment.center,
+                                    width=min(self.page.width, 1000),  # Centrado y limitado
+                                )
+                            ],
+                            alignment=ft.MainAxisAlignment.CENTER,
+                            scroll="auto",
                             expand=True,
-                            padding=10,
-                            margin=ft.margin.symmetric(horizontal=10),
-                            height=600,
-                            width=float("inf"),  # Ocupa todo el ancho disponible
-                            alignment=ft.alignment.center,
-                            bgcolor=ft.Colors.WHITE,
-                            border_radius=10,
-                            border=ft.border.all(1, ft.Colors.GREY_300),
-                            shadow=ft.BoxShadow(blur_radius=10, color=ft.Colors.GREY_300),
-                            clip_behavior=ft.ClipBehavior.ANTI_ALIAS,
                         ),
                     ],
                     alignment=ft.MainAxisAlignment.START,

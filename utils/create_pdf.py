@@ -49,6 +49,6 @@ def rellenar_pdf_con_fondo(datos, fondo_path="assets/documento_control.png",
     # Firmas
     c.setFont("Helvetica", 20)
     c.drawString(50, 150, f"{datos['firma_cargador']}")
-    c.drawString(310, 150, f"{datos['firma_transportista']}")
+    c.drawString(320, 150, f"{datos['firma_transportista']}")
 
     c.save()

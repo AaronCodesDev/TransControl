@@ -161,12 +161,17 @@ class DocumentsView:
                                 ft.PopupMenuItem(
                                     text="Ver QR",
                                     icon=ft.Icons.QR_CODE,
-                                    on_click=lambda e, doc=doc: self.page.go(f'/qr/{doc.id}')
+                                    on_click=lambda e: self._mostrar_dialogo_qr()
                                 ),
                                 ft.PopupMenuItem(
                                     text='Ver Documento' if doc.archivo else 'Documento no disponible',
                                     icon=ft.Icons.CONTENT_PASTE_SEARCH,
                                     on_click=(lambda e, d=doc: self.page.go(f'/output_pdf/{d.id}')) if doc.archivo else lambda e: None
+                                ),
+                                ft.PopupMenuItem(
+                                    text='Descargar Documento' if doc.archivo else 'Documento no disponible',
+                                    icon=ft.Icons.CONTENT_PASTE_SEARCH,
+                                    on_click=(lambda e, d=doc: self.page.launch_url(f'/assets/docs/{d.archivo}')) if doc.archivo else lambda e: None
                                 ),
                                 ft.PopupMenuItem(
                                     text="Eliminar Documento",
@@ -270,3 +275,17 @@ class DocumentsView:
                 alignment=ft.MainAxisAlignment.SPACE_AROUND,
             )
         )
+
+    def _mostrar_dialogo_qr(self):
+        self.dialog.title = ft.Text("QR no disponible")
+        self.dialog.content = ft.Text("La funcionalidad del código QR estará disponible próximamente.")
+        self.dialog.actions = [
+            ft.TextButton("Cerrar", on_click=lambda e: self._cerrar_dialogo())
+        ]
+        self.page.dialog = self.dialog
+        self.dialog.open = True
+        self.page.update()
+
+    def _cerrar_dialogo(self):
+        self.dialog.open = False
+        self.page.update()
