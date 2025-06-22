@@ -61,7 +61,7 @@ pip install -r requirements.txt
 
 Para crear/resetear la base datos
 ```bash
-python -m tests.create_db
+python -m database.create_db
 ```
 
 Crear empresas en la base datos para pruebas
