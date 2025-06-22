@@ -79,14 +79,14 @@ def delete_user(db: Session, user_id: int):
 # Obtener el conteo de documentos
 def get_document_count(db: Session, user: Usuario = None):
     query = db.query(Documentos)
-    if user and not getattr(user, 'is_admin', False):
+    if user and user.rol != 'admin':
         query = query.filter(Documentos.usuarios_id == user.id)
     return query.count()
 
 # Obtener todas las rutas de transporte en una fecha específica
 def get_daily_routes(db: Session, fecha: str, user: Usuario = None):
     query = db.query(Documentos).filter(Documentos.fecha_creacion == fecha)
-    if user and not getattr(user, 'is_admin', False):
+    if user and user.rol != 'admin':
         query = query.filter(Documentos.usuarios_id == user.id)
     return query.all()
 
@@ -98,7 +98,7 @@ from datetime import datetime
 
 # Obtener total de empresas registradas
 def get_company_count(db: Session, user: Usuario = None):
-    if user and not getattr(user, 'is_admin', False):
+    if user and user.rol != 'admin':
         return db.query(Empresas).filter(Empresas.usuario_id == user.id).count()
     return db.query(Empresas).count()
 
