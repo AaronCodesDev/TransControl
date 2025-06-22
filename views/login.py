@@ -91,32 +91,52 @@ class LoginView:
         return ft.View(
             route='/login',
             controls=[
-                ft.Column(
-                    controls=[
-                        ft.Container(
-                            content=ft.Row([self.theme_button], alignment=ft.MainAxisAlignment.END),
-                            margin=ft.margin.only(top=30)
-                        ),
-                        logo,
-                        ft.Text('Iniciar Sesión', size=30, weight='bold'),
-                        self.email,
-                        self.password,
-                        self.remember_me,
-                        login_btn,
-                        self.error_text,
-                        self.message_text,
-                        ft.TextButton(
-                            "❌ Olvidar datos recordados",
-                            on_click=lambda e: (clear_credentials(), self.reset_fields())
-                        ),
-                        ft.TextButton(
-                            "¿No tienes cuenta? Regístrate",
-                            on_click=lambda e: self.go_to_register()
-                        ),
-                    ],
-                    horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                    alignment=ft.MainAxisAlignment.CENTER,
-                    spacing=10,
+                # Botón de modo oscuro arriba a la derecha sin expandir
+                ft.Container(
+                    content=ft.Row(
+                        controls=[self.theme_button],
+                        alignment=ft.MainAxisAlignment.END
+                    ),
+                    padding=ft.padding.only(top=20, right=20)
                 ),
+
+                # Formulario centrado
+                ft.Container(
+                    alignment=ft.alignment.center,
+                    content=ft.Column(
+                        controls=[
+                            logo,
+                            ft.Text('Iniciar Sesión', size=30, weight='bold'),
+                            ft.Container(self.email, alignment=ft.alignment.center, width=300),
+                            ft.Container(self.password, alignment=ft.alignment.center, width=300),
+                            ft.Container(
+                                content=ft.Row([self.remember_me], alignment=ft.MainAxisAlignment.START),
+                                alignment=ft.alignment.center,
+                                width=300
+                            ),
+                            ft.Container(login_btn, alignment=ft.alignment.center, width=300),
+                            ft.Container(self.error_text, alignment=ft.alignment.center, width=300),
+                            ft.Container(self.message_text, alignment=ft.alignment.center, width=300),
+                            ft.Container(
+                                ft.TextButton(
+                                    "❌ Olvidar datos recordados",
+                                    on_click=lambda e: (clear_credentials(), self.reset_fields())
+                                ),
+                                alignment=ft.alignment.center,
+                                width=300
+                            ),
+                            ft.Container(
+                                ft.TextButton(
+                                    "¿No tienes cuenta? Regístrate",
+                                    on_click=lambda e: self.go_to_register()
+                                ),
+                                alignment=ft.alignment.center,
+                                width=300
+                            ),
+                        ],
+                        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                        spacing=10,
+                    )
+                )
             ]
         )

@@ -12,7 +12,7 @@ Permite almacenar, consultar y organizar información de rutas y empresas de man
 - Interfaz gráfica desarrollada con [Flet](https://flet.dev/).
 - Organización de documentos y control de diario y total de operaciones.
 - Preparado para ser ampliado a versiones Web y Mobile.
-- Generación automática de un documento PDF con código QR para su presentación ante las autoridades, si así se requiere.
+- Generación automática de un documento PDF para su presentación ante las autoridades, si así se requiere.
 
 ---
 
@@ -57,11 +57,11 @@ pip install -r requirements.txt
 
 ---
 
-## 🛠️ Cómo ejecutar
+## 🛠️ Cómo crear base de datos
 
-Para crear/resetear la base datos para pruebas
+Para crear/resetear la base datos
 ```bash
-python -m tests.reset_db
+python -m tests.create_db
 ```
 
 Crear empresas en la base datos para pruebas
@@ -71,19 +71,6 @@ python -m tests.create_document # Documentos
 python -m tests.create_user # usuarios
 ```
 
-Ejecutar la app
-
-```bash
-python main.py
-# o usando flet 
-flet main.py
-```
-Para vista movil:
-
-```bash
-python main.py --ios # Para iOS 
-flet main.py --android # Para Android 
-```
 ---
 
 # ✅ ¿Cómo usarlo?
@@ -92,7 +79,7 @@ flet main.py --android # Para Android
 git clone https://github.com/AaronCodesDev/TransControl.git
 ```
 - Instala las dependencias.
-- Ejecuta `main.py` o `flet main.py` para iniciar la aplicación.
+- Ejecuta `python3 main.py --web` o `flet main.py --web` para iniciar la aplicación.
 
 ## 📄 Licencia
 
@@ -105,4 +92,10 @@ Puedes usarlo, modificarlo y distribuirlo libremente.
 
 🚧 Proyecto en desarrollo — Se están implementando nuevas funcionalidades y mejoras de interfaz.
 
+Proximas actualizaciones:
+- Creacion código QR
+- Opción descargar pdf
+
 ---
+
+📝 Autor [AaronCodesDev](https://github.com/AaronCodesDev)
