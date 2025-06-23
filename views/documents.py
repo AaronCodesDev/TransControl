@@ -170,9 +170,8 @@ class DocumentsView:
                                 ),
                                 ft.PopupMenuItem(
                                     text='Descargar Documento' if doc.archivo else 'Documento no disponible',
-                                    icon=ft.Icons.CONTENT_PASTE_SEARCH,
-                                    on_click=(lambda e, d=doc: self.page.launch_url(f'/assets/docs/{d.archivo}')) if doc.archivo else lambda e: None
-                                ),
+                                    icon=ft.Icons.FILE_DOWNLOAD_OFF_SHARP,
+                                    on_click=lambda e: self._mostrar_dialogo_descargar()                                ),
                                 ft.PopupMenuItem(
                                     text="Eliminar Documento",
                                     icon=ft.Icons.DELETE,
@@ -279,6 +278,21 @@ class DocumentsView:
     def _mostrar_dialogo_qr(self):
         self.dialog.title = ft.Text("QR no disponible")
         self.dialog.content = ft.Text("La funcionalidad del código QR estará disponible próximamente.")
+        self.dialog.actions = [
+            ft.TextButton("Cerrar", on_click=lambda e: self._cerrar_dialogo())
+        ]
+        self.page.dialog = self.dialog
+        self.dialog.open = True
+        self.page.update()
+
+    def _cerrar_dialogo(self):
+        self.dialog.open = False
+        self.page.update()
+        
+        
+    def _mostrar_dialogo_descargar(self):
+        self.dialog.title = ft.Text("Descarga no disponible")
+        self.dialog.content = ft.Text("La funcionalidad de descarga documento estará disponible próximamente.")
         self.dialog.actions = [
             ft.TextButton("Cerrar", on_click=lambda e: self._cerrar_dialogo())
         ]
