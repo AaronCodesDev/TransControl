@@ -91,7 +91,6 @@ class LoginView:
         return ft.View(
             route='/login',
             controls=[
-                # Botón de modo oscuro arriba a la derecha sin expandir
                 ft.Container(
                     content=ft.Row(
                         controls=[self.theme_button],
