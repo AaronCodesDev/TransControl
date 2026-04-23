@@ -62,6 +62,7 @@ class CreateDocumentView:
             menu_height=300,
             border_radius=12,
             filled=True,
+            width=float('inf'),
         )
 
         vehicle_options = [ft.dropdown.Option("manual", "✏️ Introducir manualmente")]
@@ -74,6 +75,7 @@ class CreateDocumentView:
             menu_height=300,
             border_radius=12,
             filled=True,
+            width=float('inf'),
             value="manual",
             on_change=self._on_vehicle_change,
         )

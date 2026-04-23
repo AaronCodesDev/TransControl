@@ -24,6 +24,14 @@ def main(page: ft.Page):
     page.assets_dir = "assets"
 
     # ── Aplicar tema guardado ────────────────────────────
+    _no_transition = ft.PageTransitionsTheme(
+        android=ft.PageTransitionTheme.NONE,
+        ios=ft.PageTransitionTheme.NONE,
+        linux=ft.PageTransitionTheme.NONE,
+        macos=ft.PageTransitionTheme.NONE,
+        windows=ft.PageTransitionTheme.NONE,
+    )
+
     def apply_theme(theme_id: int, _reload: bool = True):
         t = get_theme(theme_id)
         save_theme_id(theme_id)
@@ -32,11 +40,13 @@ def main(page: ft.Page):
             color_scheme_seed=t["seed"],
             use_material3=True,
             visual_density=ft.VisualDensity.COMFORTABLE,
+            page_transitions=_no_transition,
         )
         page.dark_theme = ft.Theme(
             color_scheme_seed=t["seed"],
             use_material3=True,
             visual_density=ft.VisualDensity.COMFORTABLE,
+            page_transitions=_no_transition,
         )
         page.bgcolor = t["bg"]
         page.tc_theme = t           # disponible globalmente en page
@@ -120,6 +130,7 @@ def main(page: ft.Page):
         page.update()
 
     page.on_route_change = route_change
+    page.force_route = force_route   # accesible desde todas las vistas
 
     def go_to_register():
         force_route("/register")

@@ -1,7 +1,112 @@
 import os
+import random
 import flet as ft
 from datetime import date, datetime
 from database.crud import get_document_count, get_daily_routes, get_company_count, get_top_destinations
+from utils.nav_bar import build_bottom_nav
+
+FRASES_TRANSPORTE = [
+    "Cada kilómetro recorrido es un paso más hacia el éxito.",
+    "Las rutas más largas forjan los mejores conductores.",
+    "El asfalto es tu lienzo, el camión tu pincel.",
+    "Mover el mundo, un envío a la vez.",
+    "La constancia en la carretera es la clave del negocio.",
+    "Cada entrega a tiempo es una promesa cumplida.",
+    "El transporte no para: tú tampoco.",
+    "Detrás de cada producto hay un conductor que lo hizo posible.",
+    "La carretera premia a los que salen temprano.",
+    "Sin transportistas, el mundo se detiene.",
+    "Tu volante, tu empresa, tu futuro.",
+    "Cada ruta nueva es una oportunidad nueva.",
+    "La puntualidad es el mejor contrato que puedes firmar.",
+    "El motor que arranca todos los días es el de quien triunfa.",
+    "Confía en tu ruta, confía en tu esfuerzo.",
+    "El camino largo también llega a destino.",
+    "Un buen transportista nunca pierde el rumbo.",
+    "La carretera enseña lo que ningún aula puede.",
+    "Profesionalidad al volante, confianza en el cliente.",
+    "Cada km es inversión en tu reputación.",
+    "El transporte es el corazón de la economía.",
+    "No hay carga demasiado grande para quien está preparado.",
+    "La logística perfecta empieza con un conductor comprometido.",
+    "Salir antes del amanecer es el secreto de los mejores.",
+    "Tu trabajo mueve el comercio de toda una región.",
+    "El respeto en la carretera se gana con hechos.",
+    "Cada entrega exitosa construye tu nombre.",
+    "Los kilómetros no mienten: el esfuerzo siempre se nota.",
+    "Un conductor organizado es un negocio que crece.",
+    "La paciencia en el tráfico es sabiduría en el negocio.",
+    "Hoy es un buen día para superar el récord de ayer.",
+    "La carretera es larga, pero tu determinación es más.",
+    "Conoces cada curva, conoces tu oficio.",
+    "El transporte une ciudades y une personas.",
+    "Detrás del volante hay un emprendedor.",
+    "Cada factura cobrada es el fruto de tu esfuerzo.",
+    "La disciplina en la ruta se refleja en los resultados.",
+    "Mantén el depósito lleno y la actitud más llena aún.",
+    "Los mejores negocios se construyen kilómetro a kilómetro.",
+    "Tu camión es tu herramienta, cuídala como a tu empresa.",
+    "El cliente que confía en ti vale más que cien nuevos.",
+    "La seguridad vial es también seguridad para tu negocio.",
+    "Cada parada bien gestionada ahorra tiempo y dinero.",
+    "El transporte eficiente es el que nadie nota porque todo llega.",
+    "Conocer la ruta es la mitad del trabajo.",
+    "El motor más importante es tu motivación.",
+    "Rutas claras, cuentas claras, negocio claro.",
+    "El frío del amanecer despierta a los que de verdad quieren.",
+    "Un camionero feliz es el mejor seguro de tu mercancía.",
+    "La excelencia no se improvisa, se conduce cada día.",
+    "Lo que hoy parece lejos, mañana ya está entregado.",
+    "Tu GPS más fiable es tu experiencia.",
+    "La carretera recompensa la dedicación.",
+    "Cada nuevo cliente fue antes un desconocido en la ruta.",
+    "El transportista profesional no para por el mal tiempo.",
+    "Organizar bien la carga es organizar bien el negocio.",
+    "Cada documento en regla es un paso libre en la carretera.",
+    "La flota que se cuida es la que nunca falla.",
+    "El mejor camino es el que lleva al cliente satisfecho.",
+    "Conduce con cabeza, llega con orgullo.",
+    "La rentabilidad empieza antes de arrancar el motor.",
+    "Hay quienes mueven montañas; tú mueves lo que importa.",
+    "El transporte no entiende de excusas, solo de soluciones.",
+    "Conoce tus costes como conoces tus rutas.",
+    "Una entrega a tiempo vale más que mil palabras.",
+    "El profesional del transporte vende confianza, no solo fletes.",
+    "Cada mañana que arrancas es una victoria sobre la rutina.",
+    "La puntualidad es la cortesía de los camioneros.",
+    "Cuida tu carta de porte como cuidas tu reputación.",
+    "El transporte une lo que la distancia separa.",
+    "Las mejores historias de éxito empiezan en una cabina.",
+    "Quien conoce bien su ruta, conoce bien su negocio.",
+    "No existe mal tiempo para un buen transportista.",
+    "Tu esfuerzo hoy es el capital de mañana.",
+    "La carretera es justa: da a cada uno lo que aporta.",
+    "Cada kilómetro en blanco es una oportunidad perdida.",
+    "El transporte bien hecho no necesita publicidad.",
+    "Sé el conductor que tus clientes recomiendan.",
+    "La constancia supera al talento sin esfuerzo.",
+    "Haz de cada ruta una experiencia memorable.",
+    "El mejor descanso es el que prepara la próxima entrega.",
+    "Los grandes negocios del transporte empezaron con un solo camión.",
+    "Mantén la cabeza fría y el volante firme.",
+    "El transportista puntual nunca busca excusas.",
+    "Tu ruta es única; nadie la conoce mejor que tú.",
+    "La calidad del servicio vale más que el precio del flete.",
+    "Cada nuevo contrato es una nueva confianza depositada en ti.",
+    "El camino al éxito tiene muchos peajes, pero vale la pena.",
+    "Los que mueven la carga mueven la economía.",
+    "Hoy la carretera es tuya; aprovéchala.",
+    "El transporte es vocación, no solo profesión.",
+    "Cuida cada entrega como si fuera la primera.",
+    "El profesional del volante sabe que el tiempo es dinero.",
+    "Una ruta bien planificada es la mitad del éxito.",
+    "El orgullo del transportista está en llegar siempre.",
+    "Cada empresa que confía en ti es un socio de vida.",
+    "La carretera no espera; tampoco tus oportunidades.",
+    "Ser puntual es ser profesional.",
+    "El mejor kilometraje es el que lleva satisfacción al cliente.",
+    "TransControl: tu negocio organizado, tu ruta despejada.",
+]
 
 
 class DashboardView:
@@ -19,6 +124,7 @@ class DashboardView:
 
         hora   = datetime.now().hour
         saludo = "Buenos días" if hora < 13 else ("Buenas tardes" if hora < 20 else "Buenas noches")
+        frase  = random.choice(FRASES_TRANSPORTE)
 
         tc     = getattr(self.page, 'tc_theme', {})
         ab_color = tc.get('appbar_color', '#1B5E20')
@@ -68,8 +174,11 @@ class DashboardView:
                 ft.Row(
                     alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
                     controls=[
-                        ft.Text('TransControl', size=14, weight=ft.FontWeight.W_600,
-                                color=ft.Colors.with_opacity(0.55, ft.Colors.WHITE)),
+                        ft.Row(spacing=8, vertical_alignment=ft.CrossAxisAlignment.CENTER, controls=[
+                            ft.Image(src='logo.svg', width=28, height=28, fit=ft.ImageFit.CONTAIN),
+                            ft.Text('TransControl', size=14, weight=ft.FontWeight.W_600,
+                                    color=ft.Colors.with_opacity(0.80, ft.Colors.WHITE)),
+                        ]),
                         ft.Row(spacing=0, controls=[
                             *(([admin_btn]) if admin_btn else []),
                             self.theme_button,
@@ -82,11 +191,17 @@ class DashboardView:
                     vertical_alignment=ft.CrossAxisAlignment.CENTER,
                     controls=[
                         ft.Column(spacing=2, controls=[
-                            ft.Text(saludo + ',', size=13, color=text_secondary),
+                            ft.Text(saludo + ',', size=13,
+                                    color=ft.Colors.with_opacity(0.80, ft.Colors.WHITE)),
                             ft.Row(spacing=6, controls=[
-                                ft.Text(self.user.nombre or 'Usuario', size=24,
+                                ft.Text((self.user.nombre or 'Usuario') + ' 👋', size=24,
                                         weight=ft.FontWeight.W_700, color=ft.Colors.WHITE),
                             ]),
+                            ft.Container(height=6),
+                            ft.Text(frase, size=11,
+                                    color=ft.Colors.with_opacity(0.70, ft.Colors.WHITE),
+                                    italic=True, max_lines=2, overflow=ft.TextOverflow.ELLIPSIS,
+                                    width=220),
                         ]),
                         avatar,
                     ],
@@ -95,7 +210,7 @@ class DashboardView:
         )
 
         # ── Stats row ─────────────────────────────────────────
-        def stat_card(value, label, icon):
+        def stat_card(value, label, emoji):
             return ft.Container(
                 expand=1,
                 border_radius=16,
@@ -111,7 +226,7 @@ class DashboardView:
                     horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                     spacing=4,
                     controls=[
-                        ft.Icon(icon, size=18, color=accent),
+                        ft.Text(emoji, size=22, text_align=ft.TextAlign.CENTER),
                         ft.Text(value, size=24, weight=ft.FontWeight.W_800, color=accent),
                         ft.Text(label, size=9, color=text_label, weight=ft.FontWeight.W_600,
                                 text_align=ft.TextAlign.CENTER),
@@ -120,46 +235,41 @@ class DashboardView:
             )
 
         stats_row = ft.Row(spacing=10, controls=[
-            stat_card(str(total_docs),    'DOCS',     ft.Icons.DESCRIPTION_OUTLINED),
-            stat_card(str(company_count), 'EMPRESAS', ft.Icons.APARTMENT_OUTLINED),
-            stat_card(str(daily_docs),    'HOY',      ft.Icons.TODAY_OUTLINED),
+            stat_card(str(total_docs),    'DOCS',     '📄'),
+            stat_card(str(company_count), 'EMPRESAS', '🏢'),
+            stat_card(str(daily_docs),    'HOY',      '📅'),
         ])
 
         # ── Quick actions ─────────────────────────────────────
-        def action_card(label, sublabel, icon, route):
-            return ft.GestureDetector(
-                on_tap=lambda e, r=route: self._nav(r),
-                content=ft.Container(
-                    expand=1,
-                    border_radius=16,
-                    padding=ft.padding.all(14),
-                    bgcolor=card,
-                    border=ft.border.all(1, ft.Colors.with_opacity(0.08, ft.Colors.WHITE if is_dark else ft.Colors.BLACK)),
-                    shadow=ft.BoxShadow(
-                        blur_radius=10,
-                        color=ft.Colors.with_opacity(0.15, ft.Colors.BLACK),
-                        offset=ft.Offset(0, 3),
-                    ),
-                    content=ft.Column(spacing=6, controls=[
-                        ft.Container(
-                            width=36, height=36, border_radius=10,
-                            bgcolor=ft.Colors.with_opacity(0.15, accent),
-                            alignment=ft.alignment.center,
-                            content=ft.Icon(icon, size=20, color=accent),
-                        ),
-                        ft.Text(label, size=12, weight=ft.FontWeight.W_700, color=text_primary),
-                        ft.Text(sublabel, size=10, color=text_secondary),
-                    ]),
+        def action_card(label, icon, route):
+            return ft.Container(
+                expand=1,
+                border_radius=16,
+                bgcolor=card,
+                border=ft.border.all(1, ft.Colors.with_opacity(0.07, ft.Colors.WHITE if is_dark else ft.Colors.BLACK)),
+                padding=ft.padding.symmetric(horizontal=8, vertical=14),
+                shadow=ft.BoxShadow(
+                    blur_radius=8,
+                    color=ft.Colors.with_opacity(0.12, ft.Colors.BLACK),
+                    offset=ft.Offset(0, 2),
+                ),
+                on_click=lambda e, r=route: self._nav(r),
+                ink=True,
+                content=ft.Column(
+                    horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                    spacing=4,
+                    controls=[
+                        ft.Icon(icon, size=22, color=accent),
+                        ft.Text(label, size=9, color=text_label, weight=ft.FontWeight.W_600,
+                                text_align=ft.TextAlign.CENTER),
+                    ],
                 ),
             )
 
         quick_actions = ft.Row(spacing=10, controls=[
-            action_card('Nuevo doc', 'Carta de porte',
-                        ft.Icons.ADD_CIRCLE_OUTLINE_ROUNDED, '/create_document'),
-            action_card('Empresa', 'Contratante',
-                        ft.Icons.APARTMENT_ROUNDED, '/create_company'),
-            action_card('Vehículos', 'Mis matrículas',
-                        ft.Icons.DIRECTIONS_CAR_ROUNDED, '/vehicles'),
+            action_card('NUEVO DOC', ft.Icons.DESCRIPTION_OUTLINED,    '/create_document'),
+            action_card('EMPRESA',   ft.Icons.APARTMENT_ROUNDED,       '/create_company'),
+            action_card('VEHÍCULOS', ft.Icons.DIRECTIONS_CAR_ROUNDED,  '/vehicles'),
         ])
 
         # ── Recent docs ───────────────────────────────────────
@@ -194,6 +304,7 @@ class DashboardView:
                             controls=[
                                 ft.Row(spacing=6, expand=True, controls=[
                                     ft.Text(medals[i] if i < 3 else f"{i+1}.", size=13),
+                                    ft.Text('📍', size=12),
                                     ft.Text(destino, size=13, weight=ft.FontWeight.W_600,
                                             color=accent,
                                             max_lines=1, overflow=ft.TextOverflow.ELLIPSIS, expand=True),
@@ -270,18 +381,4 @@ class DashboardView:
         self.page.go(route)
 
     def _build_bottom_appbar(self, ab_color, accent):
-        return ft.BottomAppBar(
-            bgcolor=ab_color,
-            elevation=8,
-            content=ft.Row(
-                expand=True,
-                alignment=ft.MainAxisAlignment.SPACE_AROUND,
-                controls=[
-                    ft.IconButton(icon=ft.Icons.HOME_ROUNDED,                 icon_color=accent,          tooltip='Inicio'),
-                    ft.IconButton(icon=ft.Icons.FORMAT_LIST_NUMBERED_ROUNDED,  icon_color=ft.Colors.WHITE, tooltip='Documentos', on_click=lambda e: self._nav('/documents')),
-                    ft.IconButton(icon=ft.Icons.DIRECTIONS_CAR_ROUNDED,        icon_color=ft.Colors.WHITE, tooltip='Vehículos',  on_click=lambda e: self._nav('/vehicles')),
-                    ft.IconButton(icon=ft.Icons.APARTMENT_ROUNDED,             icon_color=ft.Colors.WHITE, tooltip='Empresas',   on_click=lambda e: self._nav('/companies')),
-                    ft.IconButton(icon=ft.Icons.PERSON_ROUNDED,                icon_color=ft.Colors.WHITE, tooltip='Perfil',     on_click=lambda e: self._nav('/profile')),
-                ],
-            ),
-        )
+        return build_bottom_nav(self.page, '/dashboard', ab_color)

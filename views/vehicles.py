@@ -1,4 +1,5 @@
 import flet as ft
+from utils.nav_bar import build_bottom_nav
 from database.db import SessionLocal
 from database.models import Vehiculos
 
@@ -31,8 +32,11 @@ class VehiclesView:
                 ft.Row(
                     alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
                     controls=[
-                        ft.Text('TransControl', size=14, weight=ft.FontWeight.W_600,
-                                color=ft.Colors.with_opacity(0.50, ft.Colors.WHITE)),
+                        ft.Row(spacing=8, vertical_alignment=ft.CrossAxisAlignment.CENTER, controls=[
+                            ft.Image(src='logo.svg', width=28, height=28, fit=ft.ImageFit.CONTAIN),
+                            ft.Text('TransControl', size=14, weight=ft.FontWeight.W_600,
+                                    color=ft.Colors.with_opacity(0.80, ft.Colors.WHITE)),
+                        ]),
                         self.theme_button,
                     ],
                 ),
@@ -290,20 +294,5 @@ class VehiclesView:
     #  NAV
     # ──────────────────────────────────────────
     def _build_bottom_appbar(self):
-        ab_color = getattr(self.page, 'tc_theme', {}).get('appbar_color', '#1B5E20')
-        accent   = getattr(self.page, 'tc_theme', {}).get('accent', '#43A047')
-        return ft.BottomAppBar(
-            bgcolor=ab_color,
-            elevation=8,
-            content=ft.Row(
-                expand=True,
-                alignment=ft.MainAxisAlignment.SPACE_AROUND,
-                controls=[
-                    ft.IconButton(icon=ft.Icons.HOME_ROUNDED,                 icon_color=ft.Colors.WHITE, tooltip="Inicio",      on_click=lambda e: self.page.go('/dashboard')),
-                    ft.IconButton(icon=ft.Icons.FORMAT_LIST_NUMBERED_ROUNDED,  icon_color=ft.Colors.WHITE, tooltip="Documentos",  on_click=lambda e: self.page.go('/documents')),
-                    ft.IconButton(icon=ft.Icons.DIRECTIONS_CAR_ROUNDED,        icon_color=accent,          tooltip="Vehículos"),
-                    ft.IconButton(icon=ft.Icons.APARTMENT_ROUNDED,             icon_color=ft.Colors.WHITE, tooltip="Empresas",    on_click=lambda e: self.page.go('/companies')),
-                    ft.IconButton(icon=ft.Icons.PERSON_ROUNDED,                icon_color=ft.Colors.WHITE, tooltip="Perfil",      on_click=lambda e: self.page.go('/profile')),
-                ],
-            ),
-        )
+        ab_color = getattr(self.page, 'tc_theme', {}).get('appbar_color', '#0D0D0D')
+        return build_bottom_nav(self.page, '/vehicles', ab_color)

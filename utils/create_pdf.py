@@ -4,15 +4,23 @@ from reportlab.lib.utils import ImageReader
 import os
 
 
-def _draw_signature_image(c, img_path: str, x: float, y: float,
-                           max_w: float = 160, max_h: float = 60):
-    """Dibuja una imagen de firma/sello escalada y centrada en la posición dada."""
+def _draw_signature_image(c, img_path: str, x: float, y_bottom: float,
+                           box_w: float = 150, box_h: float = 45):
+    """
+    Dibuja una imagen de firma escalada y centrada dentro del recuadro.
+    x        : borde izquierdo del recuadro
+    y_bottom : borde inferior del recuadro
+    box_w/h  : dimensiones máximas del recuadro
+    """
     try:
         reader = ImageReader(img_path)
         iw, ih = reader.getSize()
-        ratio = min(max_w / iw, max_h / ih)
+        ratio = min(box_w / iw, box_h / ih)
         w, h = iw * ratio, ih * ratio
-        c.drawImage(reader, x, y - h, width=w, height=h, mask='auto')
+        # Centrar dentro del recuadro
+        x_centered = x + (box_w - w) / 2
+        y_centered = y_bottom + (box_h - h) / 2
+        c.drawImage(reader, x_centered, y_centered, width=w, height=h, mask='auto')
     except Exception:
         pass  # Si falla la imagen, simplemente no dibuja nada
 
@@ -72,7 +80,7 @@ def rellenar_pdf_con_fondo(datos, fondo_path="assets/documento_control.png",
     # Firma cargador: primero imagen, si no texto
     firma_cargador_img = datos.get('firma_cargador_img')
     if firma_cargador_img and os.path.exists(firma_cargador_img):
-        _draw_signature_image(c, firma_cargador_img, x=50, y=165, max_w=160, max_h=60)
+        _draw_signature_image(c, firma_cargador_img, x=52, y_bottom=122, box_w=150, box_h=45)
     else:
         c.setFont("Helvetica", 13)
         c.drawString(50, 150, f"{datos.get('firma_cargador', '')}")
@@ -80,83 +88,52 @@ def rellenar_pdf_con_fondo(datos, fondo_path="assets/documento_control.png",
     # Firma transportista: primero imagen, si no texto
     firma_transp_img = datos.get('firma_transportista_img')
     if firma_transp_img and os.path.exists(firma_transp_img):
-        _draw_signature_image(c, firma_transp_img, x=320, y=165, max_w=160, max_h=60)
+        _draw_signature_image(c, firma_transp_img, x=322, y_bottom=122, box_w=150, box_h=45)
     else:
         c.setFont("Helvetica", 13)
         c.drawString(320, 150, f"{datos.get('firma_transportista', '')}")
 
-    c.save()
-
-    # ── Segunda página: Albarán adjunto ─────────────────
+    # ── Segunda página: Albarán adjunto (imagen) ─────────
     albaran_path = datos.get('albaran_path')
     if albaran_path and os.path.exists(albaran_path):
-        _append_albaran(salida_path, albaran_path)
+        ext = os.path.splitext(albaran_path)[1].lower()
+        if ext != '.pdf':
+            # Dibujar directamente en el mismo canvas (sin pypdf)
+            c.showPage()
+            c.setFont("Helvetica-Bold", 13)
+            c.setFillColorRGB(0.18, 0.49, 0.20)
+            c.drawString(50, height - 50, "Albarán adjunto")
+            c.setFillColorRGB(0, 0, 0)
+            try:
+                img = ImageReader(albaran_path)
+                iw, ih = img.getSize()
+                max_w, max_h = width - 100, height - 120
+                ratio = min(max_w / iw, max_h / ih)
+                w, h = iw * ratio, ih * ratio
+                c.drawImage(img, 50, (height - 80) - h, width=w, height=h, mask='auto')
+            except Exception:
+                c.setFont("Helvetica", 11)
+                c.setFillColorRGB(0.5, 0.5, 0.5)
+                c.drawString(50, height - 90, f"No se pudo cargar la imagen: {os.path.basename(albaran_path)}")
 
+    c.save()
 
-def _append_albaran(pdf_path: str, albaran_path: str):
-    """
-    Añade una segunda página al PDF con la imagen del albarán.
-    Si el albarán ya es un PDF, lo concatena usando pypdf si está disponible,
-    si no, lo incrusta como imagen.
-    """
-    ext = os.path.splitext(albaran_path)[1].lower()
-
-    if ext == '.pdf':
-        # Intentar concatenar PDFs
-        try:
-            from pypdf import PdfWriter, PdfReader
-            writer = PdfWriter()
-            for path in [pdf_path, albaran_path]:
-                reader = PdfReader(path)
-                for page in reader.pages:
-                    writer.add_page(page)
-            # Sobreescribir el original
-            import tempfile, shutil
-            with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as tmp:
-                tmp_path = tmp.name
-            with open(tmp_path, 'wb') as f:
-                writer.write(f)
-            shutil.move(tmp_path, pdf_path)
-        except ImportError:
-            pass  # pypdf no instalado, omitir concatenación
-    else:
-        # Es imagen: añadir segunda página con la imagen
-        try:
-            from reportlab.pdfgen import canvas as pdf_canvas
-            from reportlab.lib.pagesizes import A4
-            from reportlab.lib.utils import ImageReader
-            from pypdf import PdfWriter, PdfReader
-            import tempfile
-
-            width, height = A4
-            tmp_page_path = tempfile.mktemp(suffix='.pdf')
-
-            c2 = pdf_canvas.Canvas(tmp_page_path, pagesize=A4)
-            c2.setFont("Helvetica-Bold", 12)
-            c2.setFillColorRGB(0.18, 0.49, 0.20)
-            c2.drawString(50, height - 50, "Albarán adjunto")
-            c2.setFillColorRGB(0, 0, 0)
-
-            img = ImageReader(albaran_path)
-            iw, ih = img.getSize()
-            max_w, max_h = width - 100, height - 120
-            ratio = min(max_w / iw, max_h / ih)
-            w, h = iw * ratio, ih * ratio
-            c2.drawImage(img, 50, (height - 80) - h, width=w, height=h)
-            c2.save()
-
-            # Concatenar
-            writer = PdfWriter()
-            for path in [pdf_path, tmp_page_path]:
-                reader = PdfReader(path)
-                for page in reader.pages:
-                    writer.add_page(page)
-            import tempfile as tf, shutil
-            with tf.NamedTemporaryFile(delete=False, suffix='.pdf') as tmp:
-                tmp_path = tmp.name
-            with open(tmp_path, 'wb') as f:
-                writer.write(f)
-            shutil.move(tmp_path, pdf_path)
-            os.remove(tmp_page_path)
-        except Exception:
-            pass  # Si falla, el PDF sigue siendo válido sin la segunda página
+    # ── Si el albarán es un PDF, concatenarlo ────────────
+    if albaran_path and os.path.exists(albaran_path):
+        ext = os.path.splitext(albaran_path)[1].lower()
+        if ext == '.pdf':
+            try:
+                from pypdf import PdfWriter, PdfReader
+                import tempfile, shutil
+                writer = PdfWriter()
+                for path in [salida_path, albaran_path]:
+                    reader = PdfReader(path)
+                    for page in reader.pages:
+                        writer.add_page(page)
+                with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as tmp:
+                    tmp_path = tmp.name
+                with open(tmp_path, 'wb') as f:
+                    writer.write(f)
+                shutil.move(tmp_path, salida_path)
+            except Exception:
+                pass  # pypdf no instalado o error — el PDF principal sigue válido

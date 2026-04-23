@@ -1,12 +1,11 @@
 import os
 import subprocess
 import sys
-import time
+import urllib.parse
 import flet as ft
 from database import SessionLocal
 from database.models import Documentos
 from sqlalchemy.orm import joinedload
-from utils.email_utils import enviar_pdf_por_email, config_exists, save_config
 
 
 def open_with_system_viewer(path: str):
@@ -52,6 +51,8 @@ class OutputPDFView:
                 'contratante_nombre':  doc.contratante.nombre if doc.contratante else "—",
                 'contratante_email':   (doc.contratante.email or '') if doc.contratante else '',
                 'usuario_nombre':      f"{doc.usuario.nombre} {doc.usuario.apellido}" if doc.usuario else "—",
+                'peso':                f"{doc.peso:g} kg" if doc.peso else "—",
+                'albaran_path':        doc.albaran_path or '',
             }
         else:
             d = None
@@ -98,6 +99,8 @@ class OutputPDFView:
 
         pdf_path = os.path.abspath(f"assets/docs/{d['archivo']}")
         file_exists = os.path.exists(pdf_path)
+        albaran_abs = os.path.abspath(d['albaran_path']) if d['albaran_path'] else None
+        albaran_exists = albaran_abs is not None and os.path.exists(albaran_abs)
         doc_info_email = {
             'origen':    d['lugar_origen'],
             'destino':   d['lugar_destino'],
@@ -128,18 +131,63 @@ class OutputPDFView:
                     self.page.update()
 
         def enviar_email(e):
-            if not d['contratante_email']:
-                self.page.snack_bar = ft.SnackBar(
-                    content=ft.Text("La empresa no tiene email registrado"),
-                    bgcolor=ft.Colors.ORANGE_700,
-                )
-                self.page.snack_bar.open = True
-                self.page.update()
+            self._show_mailto_dialog(d, pdf_path)
+
+        def abrir_albaran(e):
+            if albaran_exists:
+                try:
+                    open_with_system_viewer(albaran_abs)
+                except Exception as ex:
+                    self._snack(f"No se pudo abrir el albarán: {ex}", ok=False)
+
+        # Referencias mutables para actualizar botones tras adjuntar
+        _btn_ver_ref = [None]
+        _btn_adjuntar_ref = [None]
+
+        def _on_albaran_picked(ev: ft.FilePickerResultEvent):
+            if not ev.files:
                 return
-            if not config_exists():
-                self._show_smtp_dialog(d, pdf_path, doc_info_email)
-            else:
-                self._show_email_dialog(d, pdf_path, doc_info_email)
+            src = ev.files[0].path
+            ext = os.path.splitext(src)[1]
+            dst = f"assets/albaranes/albaran_doc{self.doc_id}{ext}"
+            os.makedirs("assets/albaranes", exist_ok=True)
+            import shutil
+            shutil.copy(src, dst)
+
+            # Actualizar base de datos
+            session = SessionLocal()
+            try:
+                doc_row = session.query(Documentos).filter_by(id=self.doc_id).first()
+                if doc_row:
+                    doc_row.albaran_path = dst
+                    session.commit()
+            finally:
+                session.close()
+
+            # Intentar añadir página al PDF existente
+            _append_to_existing_pdf(pdf_path, dst)
+
+            # Actualizar botones sin recargar toda la vista
+            if _btn_ver_ref[0]:
+                _btn_ver_ref[0].disabled = False
+                _btn_ver_ref[0].tooltip = None
+                _btn_ver_ref[0].on_click = lambda e, p=os.path.abspath(dst): open_with_system_viewer(p)
+            if _btn_adjuntar_ref[0]:
+                _btn_adjuntar_ref[0].text = "Cambiar albarán"
+            self._snack("✅ Albarán adjuntado correctamente", ok=True)
+
+        def adjuntar_albaran(e):
+            for item in list(self.page.overlay):
+                if isinstance(item, ft.FilePicker):
+                    self.page.overlay.remove(item)
+            picker = ft.FilePicker(on_result=_on_albaran_picked)
+            self.page.overlay.append(picker)
+            self.page.update()
+            picker.pick_files(
+                dialog_title="Seleccionar albarán sellado",
+                allowed_extensions=["jpg", "jpeg", "png", "webp", "pdf"],
+                allow_multiple=False,
+            )
 
         # ── success banner ────────────────────────────────
         success_banner = ft.Container(
@@ -198,6 +246,7 @@ class OutputPDFView:
                     _info_row(ft.Icons.CALENDAR_TODAY_OUTLINED, "Fecha de transporte", d['fecha_transporte']),
                     _info_row(ft.Icons.DIRECTIONS_CAR_OUTLINED, "Matrícula", d['matricula_vehiculo']),
                     _info_row(ft.Icons.INVENTORY_2_OUTLINED, "Carga", d['naturaleza_carga']),
+                    _info_row(ft.Icons.SCALE_OUTLINED, "Peso", d['peso']),
                     # Estado del archivo
                     ft.Container(
                         border_radius=8,
@@ -225,8 +274,8 @@ class OutputPDFView:
 
         # ── action buttons ────────────────────────────────
         btn_abrir = ft.FilledButton(
-            "Abrir PDF",
-            icon=ft.Icons.OPEN_IN_NEW_ROUNDED,
+            "Ver documento",
+            icon=ft.Icons.PICTURE_AS_PDF_ROUNDED,
             on_click=abrir_pdf,
             disabled=not file_exists,
             style=ft.ButtonStyle(
@@ -239,7 +288,18 @@ class OutputPDFView:
         btn_email = ft.OutlinedButton(
             "Enviar email",
             icon=ft.Icons.EMAIL_OUTLINED,
-            on_click=enviar_email,
+            disabled=True,
+            tooltip="Próximamente",
+            style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=12)),
+            expand=True,
+            height=48,
+        )
+        btn_albaran = ft.OutlinedButton(
+            "Ver albarán",
+            icon=ft.Icons.RECEIPT_LONG_ROUNDED,
+            on_click=abrir_albaran,
+            disabled=not albaran_exists,
+            tooltip=None if albaran_exists else "No hay albarán adjunto",
             style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=12)),
             expand=True,
             height=48,
@@ -275,6 +335,10 @@ class OutputPDFView:
                             ),
                             ft.Container(
                                 width=card_width,
+                                content=ft.Row([btn_albaran], spacing=10),
+                            ),
+                            ft.Container(
+                                width=card_width,
                                 alignment=ft.alignment.center,
                                 content=btn_volver,
                             ),
@@ -284,105 +348,124 @@ class OutputPDFView:
             ],
         )
 
-    # ── email dialogs ──────────────────────────────────────────
-    def _show_email_dialog(self, d: dict, pdf_path: str, doc_info: dict):
-        """d es el dict de datos ya extraídos de la sesión."""
-        email_dest = ft.TextField(
-            label="Enviar a",
-            value=d['contratante_email'],
+    # ── helpers ────────────────────────────────────────────────
+    def _open_dialog(self, dialog: ft.AlertDialog):
+        """Añade el diálogo al overlay y lo abre (compatible con todas las versiones de Flet)."""
+        # Limpia diálogos anteriores del overlay
+        self.page.overlay[:] = [c for c in self.page.overlay if not isinstance(c, ft.AlertDialog)]
+        self.page.overlay.append(dialog)
+        dialog.open = True
+        self.page.update()
+
+    def _close(self, dialog: ft.AlertDialog):
+        dialog.open = False
+        self.page.update()
+
+    def _snack(self, msg: str, ok: bool = True):
+        bar = ft.SnackBar(
+            content=ft.Text(msg),
+            bgcolor=ft.Colors.GREEN_700 if ok else ft.Colors.ERROR,
+            duration=4000,
+        )
+        self.page.overlay.append(bar)
+        bar.open = True
+        self.page.update()
+
+    # ── email via mailto: ──────────────────────────────────────
+    def _show_mailto_dialog(self, d: dict, pdf_path: str):
+        email_field = ft.TextField(
+            label="Email destinatario",
+            value=d['contratante_email'] or '',
             border_radius=10, filled=True, dense=True,
             prefix_icon=ft.Icons.EMAIL_OUTLINED,
+            keyboard_type=ft.KeyboardType.EMAIL,
         )
-        sending_text = ft.Text("", size=12, color=ft.Colors.GREY_600, visible=False)
+        error = ft.Text("", color=ft.Colors.ERROR, size=11, visible=False)
         dialog = ft.AlertDialog(modal=True)
 
-        def enviar(e):
-            sending_text.value = "Enviando…"
-            sending_text.visible = True
-            self.page.update()
-            dialog.open = False
-            self.page.update()
+        def abrir_cliente(e):
+            dest = email_field.value.strip()
+            if not dest or "@" not in dest:
+                error.value = "Introduce un email válido"
+                error.visible = True
+                self.page.update()
+                return
+
+            asunto = (
+                f"Carta de porte — {d['lugar_origen']} → {d['lugar_destino']}"
+                f" ({d['fecha_transporte']})"
+            )
+            cuerpo = (
+                f"Estimado/a {d['contratante_nombre']},\n\n"
+                f"Le adjunto la carta de porte correspondiente al siguiente servicio:\n\n"
+                f"Origen:    {d['lugar_origen']}\n"
+                f"Destino:   {d['lugar_destino']}\n"
+                f"Fecha:     {d['fecha_transporte']}\n"
+                f"Matrícula: {d['matricula_vehiculo'] or '—'}\n"
+                f"Carga:     {d['naturaleza_carga'] or '—'}\n\n"
+                f"Un saludo,\n{d['usuario_nombre']}"
+            )
+            mailto = (
+                f"mailto:{urllib.parse.quote(dest)}"
+                f"?subject={urllib.parse.quote(asunto)}"
+                f"&body={urllib.parse.quote(cuerpo)}"
+            )
+
+            # Abrir cliente de correo
             try:
-                msg = enviar_pdf_por_email(
-                    pdf_path=os.path.abspath(pdf_path),
-                    destinatario_email=email_dest.value,
-                    destinatario_nombre=d['contratante_nombre'],
-                    remitente_nombre=d['usuario_nombre'],
-                    doc_info=doc_info,
-                )
-                self.page.snack_bar = ft.SnackBar(content=ft.Text(msg), bgcolor=ft.Colors.GREEN_700)
+                if sys.platform == "win32":
+                    os.startfile(mailto)
+                elif sys.platform == "darwin":
+                    subprocess.Popen(["open", mailto])
+                else:
+                    subprocess.Popen(["xdg-open", mailto])
             except Exception as ex:
-                self.page.snack_bar = ft.SnackBar(
-                    content=ft.Text(f"❌ Error al enviar: {ex}"), bgcolor=ft.Colors.ERROR,
-                )
-            self.page.snack_bar.open = True
-            self.page.update()
+                error.value = f"No se pudo abrir el cliente de correo: {ex}"
+                error.visible = True
+                self.page.update()
+                return
+
+            # Abrir carpeta con el PDF para que el usuario lo adjunte
+            try:
+                if sys.platform == "win32":
+                    subprocess.Popen(["explorer", "/select,", os.path.abspath(pdf_path)])
+                elif sys.platform == "darwin":
+                    subprocess.Popen(["open", "-R", os.path.abspath(pdf_path)])
+                else:
+                    subprocess.Popen(["xdg-open", os.path.dirname(os.path.abspath(pdf_path))])
+            except Exception:
+                pass  # no es crítico
+
+            self._close(dialog)
+            self._snack("✅ Cliente de correo abierto. Adjunta el PDF y envía.", ok=True)
 
         dialog.title = ft.Row([
             ft.Icon(ft.Icons.EMAIL_OUTLINED, color=ft.Colors.GREEN_700),
             ft.Text("Enviar por email", weight=ft.FontWeight.W_600),
         ], spacing=8)
-        dialog.content = ft.Container(width=300, content=ft.Column(
-            spacing=10, tight=True,
-            controls=[email_dest, sending_text],
-        ))
-        dialog.actions = [
-            ft.TextButton("Cancelar", on_click=lambda e: self._close(dialog),
-                          style=ft.ButtonStyle(color=ft.Colors.GREY_600)),
-            ft.FilledButton("Enviar", icon=ft.Icons.SEND_OUTLINED, on_click=enviar,
-                            style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=10))),
-        ]
-        self.page.dialog = dialog
-        dialog.open = True
-        self.page.update()
-
-    def _show_smtp_dialog(self, d: dict, pdf_path: str, doc_info: dict):
-        fs = dict(border_radius=10, filled=True, dense=True)
-        smtp_host = ft.TextField(label="Servidor SMTP", value="smtp.gmail.com", **fs)
-        smtp_port = ft.TextField(label="Puerto", value="587", keyboard_type=ft.KeyboardType.NUMBER, **fs)
-        email_f = ft.TextField(label="Tu email remitente", **fs)
-        password_f = ft.TextField(label="Contraseña de aplicación", password=True, can_reveal_password=True, **fs)
-        error = ft.Text("", color=ft.Colors.ERROR, size=11, visible=False)
-        dialog = ft.AlertDialog(modal=True)
-
-        def guardar_y_enviar(e):
-            if not all([email_f.value, password_f.value]):
-                error.value = "Email y contraseña son obligatorios"
-                error.visible = True
-                self.page.update()
-                return
-            try:
-                save_config(smtp_host.value, int(smtp_port.value), email_f.value, password_f.value)
-                dialog.open = False
-                self.page.update()
-                self._show_email_dialog(d, pdf_path, doc_info)
-            except Exception as ex:
-                error.value = str(ex)
-                error.visible = True
-                self.page.update()
-
-        dialog.title = ft.Row([
-            ft.Icon(ft.Icons.SETTINGS_OUTLINED, color=ft.Colors.GREEN_700),
-            ft.Text("Configurar email", weight=ft.FontWeight.W_600),
-        ], spacing=8)
-        dialog.content = ft.Container(width=320, content=ft.Column(
+        dialog.content = ft.Container(width=310, content=ft.Column(
             spacing=10, tight=True,
             controls=[
-                ft.Text("Primera configuración SMTP:", size=12, color=ft.Colors.GREY_600),
-                ft.Text("(Gmail → usa contraseña de aplicación)", size=11, color=ft.Colors.GREY_500, italic=True),
-                smtp_host, smtp_port, email_f, password_f, error,
+                ft.Text(
+                    "Se abrirá tu cliente de correo con el asunto y cuerpo ya completados. "
+                    "También se abrirá la carpeta con el PDF para que lo adjuntes.",
+                    size=12, color=ft.Colors.GREY_500,
+                ),
+                email_field,
+                error,
             ],
         ))
         dialog.actions = [
-            ft.TextButton("Cancelar", on_click=lambda e: self._close(dialog),
-                          style=ft.ButtonStyle(color=ft.Colors.GREY_600)),
-            ft.FilledButton("Guardar y enviar", icon=ft.Icons.SEND_OUTLINED, on_click=guardar_y_enviar,
-                            style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=10))),
+            ft.TextButton(
+                "Cancelar",
+                on_click=lambda e: self._close(dialog),
+                style=ft.ButtonStyle(color=ft.Colors.GREY_600),
+            ),
+            ft.FilledButton(
+                "Abrir correo",
+                icon=ft.Icons.OPEN_IN_NEW_ROUNDED,
+                on_click=abrir_cliente,
+                style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=10)),
+            ),
         ]
-        self.page.dialog = dialog
-        dialog.open = True
-        self.page.update()
-
-    def _close(self, dialog):
-        dialog.open = False
-        self.page.update()
+        self._open_dialog(dialog)

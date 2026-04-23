@@ -3,6 +3,7 @@ import shutil
 import os
 from database.models import Documentos
 from database.db import SessionLocal
+from utils.nav_bar import build_bottom_nav
 from sqlalchemy.orm import joinedload
 from sqlalchemy import desc
 from utils.qr_utils import generate_qr_base64, build_document_qr_text
@@ -175,7 +176,7 @@ class DocumentsView:
                 on_click=lambda e, d=doc: self._mostrar_dialogo_qr(d),
             )
             btn_view = ft.IconButton(
-                icon=ft.Icons.OPEN_IN_NEW_ROUNDED,
+                icon=ft.Icons.DESCRIPTION_ROUNDED,
                 icon_size=18,
                 tooltip='Ver documento',
                 icon_color=accent,
@@ -248,7 +249,7 @@ class DocumentsView:
                     ),
                     ft.Container(height=8),
                     ft.Row(spacing=6, controls=[
-                        ft.Icon(ft.Icons.LOCATION_ON_OUTLINED, size=12, color=text_dim),
+                        ft.Text('📍', size=12),
                         ft.Text(doc.lugar_origen or '—', size=12, color=text_secondary,
                                 overflow=ft.TextOverflow.ELLIPSIS),
                         ft.Text('→', size=11, color=accent, weight=ft.FontWeight.W_700),
@@ -262,7 +263,7 @@ class DocumentsView:
                         vertical_alignment=ft.CrossAxisAlignment.CENTER,
                         controls=[
                             ft.Row(spacing=4, controls=[
-                                ft.Icon(ft.Icons.CALENDAR_TODAY_OUTLINED, size=11, color=text_dim),
+                                ft.Text('📅', size=11),
                                 ft.Text(fecha_str, size=11, color=text_secondary),
                             ]),
                             ft.Row(spacing=4, controls=[btn_qr, btn_view, btn_more]),
@@ -479,182 +480,193 @@ class DocumentsView:
         )
         error_text = ft.Text("", color=ft.Colors.ERROR, size=12, visible=False)
 
+        send_btn = ft.FilledButton(
+            "Enviar", icon=ft.Icons.SEND_OUTLINED,
+            style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=10)),
+        )
+
         def _do_send(e):
+            import threading
             dest_email = email_field.value.strip()
             if not dest_email or "@" not in dest_email:
                 error_text.value = "Introduce un email válido"
                 error_text.visible = True
                 self.page.update()
                 return
-
             if not doc.archivo:
                 error_text.value = "Este documento no tiene PDF generado"
                 error_text.visible = True
                 self.page.update()
                 return
-
             pdf_path = os.path.abspath(os.path.join("assets", "docs", doc.archivo))
             if not os.path.exists(pdf_path):
-                error_text.value = "No se encuentra el archivo PDF en el servidor"
+                error_text.value = "No se encuentra el archivo PDF"
                 error_text.visible = True
                 self.page.update()
                 return
 
             if not config_exists():
-                self.dialog.open = False
-                self.page.update()
-                self._show_email_config_dialog(doc, dest_email, pdf_path)
+                self._cerrar_dialogo()
+                self._show_smtp_dialog(doc, dest_email, pdf_path)
                 return
 
-            self.dialog.open = False
+            send_btn.disabled = True
+            error_text.value = "⏳ Enviando…"
+            error_text.color = ft.Colors.GREY_500
+            error_text.visible = True
             self.page.update()
 
-            try:
-                fecha_str = doc.fecha_transporte.strftime('%d/%m/%Y') if doc.fecha_transporte else "—"
-                usuario = doc.usuario
-                remitente = f"{usuario.nombre} {usuario.apellido}" if usuario else "TransControl"
+            def _run():
+                try:
+                    fecha_str = doc.fecha_transporte.strftime('%d/%m/%Y') if doc.fecha_transporte else "—"
+                    remitente = f"{doc.usuario.nombre} {doc.usuario.apellido}" if doc.usuario else "TransControl"
+                    msg = enviar_pdf_por_email(
+                        pdf_path=pdf_path,
+                        destinatario_email=dest_email,
+                        destinatario_nombre=contratante.nombre if contratante else dest_email,
+                        remitente_nombre=remitente,
+                        doc_info={
+                            'origen':    doc.lugar_origen,
+                            'destino':   doc.lugar_destino,
+                            'fecha':     fecha_str,
+                            'matricula': doc.matricula_vehiculo or "—",
+                        },
+                    )
+                    self._cerrar_dialogo()
+                    self._snack(msg, ok=True)
+                except Exception as ex:
+                    send_btn.disabled = False
+                    error_text.value = f"❌ Error: {ex}"
+                    error_text.color = ft.Colors.ERROR
+                    error_text.visible = True
+                    self.page.update()
 
-                msg = enviar_pdf_por_email(
-                    pdf_path=pdf_path,
-                    destinatario_email=dest_email,
-                    destinatario_nombre=contratante.nombre if contratante else dest_email,
-                    remitente_nombre=remitente,
-                    doc_info={
-                        'origen': doc.lugar_origen,
-                        'destino': doc.lugar_destino,
-                        'fecha': fecha_str,
-                        'matricula': doc.matricula_vehiculo or "—",
-                    },
-                )
-                self.page.snack_bar = ft.SnackBar(
-                    content=ft.Text(msg),
-                    bgcolor=ft.Colors.GREEN_700,
-                )
-            except Exception as ex:
-                self.page.snack_bar = ft.SnackBar(
-                    content=ft.Text(f"❌ Error al enviar: {ex}"),
-                    bgcolor=ft.Colors.ERROR,
-                )
-            self.page.snack_bar.open = True
-            self.page.update()
+            threading.Thread(target=_run, daemon=True).start()
+
+        send_btn.on_click = _do_send
 
         fecha_str = doc.fecha_transporte.strftime('%d/%m/%Y') if doc.fecha_transporte else "—"
-
         self.dialog.title = ft.Row([
             ft.Icon(ft.Icons.EMAIL_OUTLINED, color=ft.Colors.GREEN_700),
             ft.Text("Enviar por email", weight=ft.FontWeight.W_600),
         ], spacing=8)
-
         self.dialog.content = ft.Container(
             width=320,
-            content=ft.Column(
-                spacing=10,
-                tight=True,
-                controls=[
-                    ft.Container(
-                        padding=ft.padding.symmetric(horizontal=12, vertical=8),
-                        border_radius=10,
-                        bgcolor=ft.Colors.with_opacity(0.06, ft.Colors.GREEN_700),
-                        content=ft.Column(spacing=2, controls=[
-                            ft.Text(
-                                f"{doc.lugar_origen}  →  {doc.lugar_destino}",
-                                size=13, weight=ft.FontWeight.W_600, color=ft.Colors.GREEN_800,
-                            ),
-                            ft.Text(fecha_str, size=11, color=ft.Colors.GREY_600),
-                        ]),
-                    ),
-                    email_field,
-                    error_text,
-                ],
-            ),
+            content=ft.Column(spacing=10, tight=True, controls=[
+                ft.Container(
+                    padding=ft.padding.symmetric(horizontal=12, vertical=8),
+                    border_radius=10,
+                    bgcolor=ft.Colors.with_opacity(0.06, ft.Colors.GREEN_700),
+                    content=ft.Column(spacing=2, controls=[
+                        ft.Text(f"{doc.lugar_origen}  →  {doc.lugar_destino}",
+                                size=13, weight=ft.FontWeight.W_600, color=ft.Colors.GREEN_800),
+                        ft.Text(fecha_str, size=11, color=ft.Colors.GREY_600),
+                    ]),
+                ),
+                email_field,
+                error_text,
+            ]),
         )
-
         self.dialog.actions = [
-            ft.TextButton(
-                "Cancelar",
-                on_click=lambda e: self._cerrar_dialogo(),
-                style=ft.ButtonStyle(color=ft.Colors.GREY_600),
-            ),
-            ft.FilledButton(
-                "Enviar",
-                icon=ft.Icons.SEND_OUTLINED,
-                on_click=_do_send,
-                style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=10)),
-            ),
+            ft.TextButton("Cancelar", on_click=lambda e: self._cerrar_dialogo(),
+                          style=ft.ButtonStyle(color=ft.Colors.GREY_600)),
+            send_btn,
         ]
-        self.page.dialog = self.dialog
+        self.page.overlay[:] = [c for c in self.page.overlay if not isinstance(c, ft.AlertDialog)]
+        self.page.overlay.append(self.dialog)
         self.dialog.open = True
         self.page.update()
 
-    def _show_email_config_dialog(self, doc, dest_email, pdf_path):
-        """Solicita configuración SMTP la primera vez."""
-        fs = dict(border_radius=10, filled=True, dense=True)
-        smtp_host = ft.TextField(label="Servidor SMTP", value="smtp.gmail.com", **fs)
-        smtp_port = ft.TextField(label="Puerto", value="587", keyboard_type=ft.KeyboardType.NUMBER, **fs)
-        email_f = ft.TextField(label="Tu email remitente", **fs)
-        password_f = ft.TextField(label="Contraseña de aplicación", password=True, can_reveal_password=True, **fs)
-        error = ft.Text("", color=ft.Colors.ERROR, size=11, visible=False)
+    def _snack(self, msg: str, ok: bool = True):
+        bar = ft.SnackBar(
+            content=ft.Text(msg),
+            bgcolor=ft.Colors.GREEN_700 if ok else ft.Colors.ERROR,
+            duration=4000,
+        )
+        self.page.overlay.append(bar)
+        bar.open = True
+        self.page.update()
 
-        cfg_dialog = ft.AlertDialog(modal=True)
+    def _show_smtp_dialog(self, doc, dest_email, pdf_path):
+        """Configuración SMTP la primera vez."""
+        import threading
+        fs = dict(border_radius=10, filled=True, dense=True)
+        smtp_host  = ft.TextField(label="Servidor SMTP", value="smtp.gmail.com", **fs)
+        smtp_port  = ft.TextField(label="Puerto", value="587",
+                                  keyboard_type=ft.KeyboardType.NUMBER, **fs)
+        email_f    = ft.TextField(label="Tu email remitente", **fs)
+        password_f = ft.TextField(label="Contraseña de aplicación",
+                                  password=True, can_reveal_password=True, **fs)
+        error  = ft.Text("", color=ft.Colors.ERROR, size=11, visible=False)
+        cfg    = ft.AlertDialog(modal=True)
 
         def guardar_y_enviar(e):
-            if not all([email_f.value, password_f.value]):
+            if not email_f.value.strip() or not password_f.value.strip():
                 error.value = "Email y contraseña son obligatorios"
                 error.visible = True
                 self.page.update()
                 return
             try:
-                save_config(smtp_host.value, int(smtp_port.value), email_f.value, password_f.value)
-                cfg_dialog.open = False
-                self.page.update()
-
-                fecha_str = doc.fecha_transporte.strftime('%d/%m/%Y') if doc.fecha_transporte else "—"
-                usuario = doc.usuario
-                remitente = f"{usuario.nombre} {usuario.apellido}" if usuario else "TransControl"
-                contratante = doc.contratante
-
-                msg = enviar_pdf_por_email(
-                    pdf_path=pdf_path,
-                    destinatario_email=dest_email,
-                    destinatario_nombre=contratante.nombre if contratante else dest_email,
-                    remitente_nombre=remitente,
-                    doc_info={
-                        'origen': doc.lugar_origen,
-                        'destino': doc.lugar_destino,
-                        'fecha': fecha_str,
-                        'matricula': doc.matricula_vehiculo or "—",
-                    },
-                )
-                self.page.snack_bar = ft.SnackBar(content=ft.Text(msg), bgcolor=ft.Colors.GREEN_700)
+                save_config(smtp_host.value.strip(), int(smtp_port.value or "587"),
+                            email_f.value.strip(), password_f.value)
             except Exception as ex:
-                self.page.snack_bar = ft.SnackBar(
-                    content=ft.Text(f"❌ Error: {ex}"),
-                    bgcolor=ft.Colors.ERROR,
-                )
-            self.page.snack_bar.open = True
+                error.value = str(ex)
+                error.visible = True
+                self.page.update()
+                return
+
+            error.value = "⏳ Enviando…"
+            error.color = ft.Colors.GREY_500
+            error.visible = True
             self.page.update()
 
-        cfg_dialog.title = ft.Row([
+            def _run():
+                try:
+                    fecha_str = doc.fecha_transporte.strftime('%d/%m/%Y') if doc.fecha_transporte else "—"
+                    remitente = f"{doc.usuario.nombre} {doc.usuario.apellido}" if doc.usuario else "TransControl"
+                    contratante = doc.contratante
+                    msg = enviar_pdf_por_email(
+                        pdf_path=pdf_path,
+                        destinatario_email=dest_email,
+                        destinatario_nombre=contratante.nombre if contratante else dest_email,
+                        remitente_nombre=remitente,
+                        doc_info={
+                            'origen':    doc.lugar_origen,
+                            'destino':   doc.lugar_destino,
+                            'fecha':     fecha_str,
+                            'matricula': doc.matricula_vehiculo or "—",
+                        },
+                    )
+                    cfg.open = False
+                    self._snack(msg, ok=True)
+                except Exception as ex:
+                    error.value = f"❌ Error: {ex}"
+                    error.color = ft.Colors.ERROR
+                    error.visible = True
+                    self.page.update()
+
+            threading.Thread(target=_run, daemon=True).start()
+
+        cfg.title = ft.Row([
             ft.Icon(ft.Icons.SETTINGS_OUTLINED, color=ft.Colors.GREEN_700),
-            ft.Text("Configurar email", weight=ft.FontWeight.W_600),
+            ft.Text("Configurar email SMTP", weight=ft.FontWeight.W_600),
         ], spacing=8)
-        cfg_dialog.content = ft.Container(
-            width=320,
-            content=ft.Column(spacing=10, tight=True, controls=[
-                ft.Text("Configura tu cuenta de correo saliente:", size=12, color=ft.Colors.GREY_600),
-                ft.Text("(Gmail → usa contraseña de aplicación)", size=11, color=ft.Colors.GREY_500, italic=True),
-                smtp_host, smtp_port, email_f, password_f, error,
-            ]),
-        )
-        cfg_dialog.actions = [
-            ft.TextButton("Cancelar", on_click=lambda e: self._close_cfg(cfg_dialog),
+        cfg.content = ft.Container(width=320, content=ft.Column(spacing=10, tight=True, controls=[
+            ft.Text("Configura tu cuenta de correo saliente:", size=12, color=ft.Colors.GREY_600),
+            ft.Text("Gmail → usa contraseña de aplicación (no tu contraseña normal)",
+                    size=11, color=ft.Colors.GREY_500, italic=True),
+            smtp_host, smtp_port, email_f, password_f, error,
+        ]))
+        cfg.actions = [
+            ft.TextButton("Cancelar", on_click=lambda e: self._close_cfg(cfg),
                           style=ft.ButtonStyle(color=ft.Colors.GREY_600)),
             ft.FilledButton("Guardar y enviar", icon=ft.Icons.SEND_OUTLINED,
                             on_click=guardar_y_enviar,
                             style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=10))),
         ]
-        self.page.dialog = cfg_dialog
-        cfg_dialog.open = True
+        self.page.overlay[:] = [c for c in self.page.overlay if not isinstance(c, ft.AlertDialog)]
+        self.page.overlay.append(cfg)
+        cfg.open = True
         self.page.update()
 
     def _close_cfg(self, dialog):
@@ -663,19 +675,4 @@ class DocumentsView:
 
     def _build_bottom_appbar(self):
         ab_color = getattr(self.page, 'tc_theme', {}).get('appbar_color', '#1A1A1A')
-        accent = getattr(self.page, 'tc_theme', {}).get('accent', '#A3E635')
-        return ft.BottomAppBar(
-            bgcolor=ab_color,
-            elevation=8,
-            content=ft.Row(
-                expand=True,
-                controls=[
-                    ft.IconButton(icon=ft.Icons.HOME_ROUNDED, icon_color=ft.Colors.WHITE, tooltip="Inicio", on_click=lambda e: self.page.go('/dashboard')),
-                    ft.IconButton(icon=ft.Icons.FORMAT_LIST_NUMBERED_ROUNDED, icon_color=accent, tooltip="Documentos"),
-                    ft.IconButton(icon=ft.Icons.DIRECTIONS_CAR_ROUNDED, icon_color=ft.Colors.WHITE, tooltip="Vehículos", on_click=lambda e: self.page.go('/vehicles')),
-                    ft.IconButton(icon=ft.Icons.APARTMENT_ROUNDED, icon_color=ft.Colors.WHITE, tooltip="Empresas", on_click=lambda e: self.page.go('/companies')),
-                    ft.IconButton(icon=ft.Icons.PERSON_ROUNDED, icon_color=ft.Colors.WHITE, tooltip="Perfil", on_click=lambda e: self.page.go('/profile')),
-                ],
-                alignment=ft.MainAxisAlignment.SPACE_AROUND,
-            ),
-        )
+        return build_bottom_nav(self.page, '/documents', ab_color)

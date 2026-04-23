@@ -114,19 +114,7 @@ class LoginView:
                 spacing=10,
                 controls=[
                     ft.Row([self.theme_button], alignment=ft.MainAxisAlignment.END),
-                    ft.Container(
-                        width=72, height=72,
-                        border_radius=20,
-                        bgcolor=ft.Colors.with_opacity(0.18, ft.Colors.WHITE),
-                        border=ft.border.all(1, ft.Colors.with_opacity(0.28, ft.Colors.WHITE)),
-                        shadow=ft.BoxShadow(
-                            blur_radius=24,
-                            color=ft.Colors.with_opacity(0.20, ft.Colors.BLACK),
-                            offset=ft.Offset(0, 8),
-                        ),
-                        alignment=ft.alignment.center,
-                        content=ft.Icon(ft.Icons.LOCAL_SHIPPING_ROUNDED, size=36, color=ft.Colors.WHITE),
-                    ),
+                    ft.Image(src='logo.svg', width=90, height=90, fit=ft.ImageFit.CONTAIN),
                     ft.Text('TransControl', size=24, weight=ft.FontWeight.W_800,
                             color=ft.Colors.WHITE),
                     ft.Text('GESTIÓN DE TRANSPORTES', size=10,

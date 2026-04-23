@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 294" width="280" height="294">
+  <!-- Hexágono relleno oscuro -->
+  <polygon points="140,6 266,78 266,222 140,294 14,222 14,78" fill="#0D0D0D"/>
+  <!-- Hexágono borde interior sutil -->
+  <polygon points="140,22 250,88 250,212 140,278 30,212 30,88" fill="none" stroke="#A3E635" stroke-width="1" opacity="0.25"/>
+
+  <!-- Pin origen izquierda -->
+  <circle cx="52" cy="150" r="13" fill="#A3E635"/>
+  <circle cx="52" cy="150" r="6" fill="#0D0D0D"/>
+
+  <!-- Pin destino derecha -->
+  <circle cx="228" cy="150" r="13" fill="#A3E635"/>
+  <circle cx="228" cy="150" r="6" fill="#0D0D0D"/>
+
+  <!-- Ruta curva punteada -->
+  <path d="M65 150 Q140 90 215 150" fill="none" stroke="#A3E635" stroke-width="3" stroke-dasharray="8,5" stroke-linecap="round" opacity="0.7"/>
+
+  <!-- Camión -->
+  <g transform="translate(108, 96)">
+    <!-- Carrocería -->
+    <rect x="0" y="6" width="24" height="16" rx="3" fill="#A3E635"/>
+    <!-- Cabina -->
+    <rect x="22" y="0" width="18" height="22" rx="3" fill="#A3E635"/>
+    <!-- Ventana cabina -->
+    <rect x="24" y="3" width="14" height="9" rx="2" fill="#0D0D0D" opacity="0.55"/>
+    <!-- Ruedas -->
+    <circle cx="8"  cy="25" r="5.5" fill="#0D0D0D"/>
+    <circle cx="8"  cy="25" r="2.5" fill="#A3E635"/>
+    <circle cx="30" cy="25" r="5.5" fill="#0D0D0D"/>
+    <circle cx="30" cy="25" r="2.5" fill="#A3E635"/>
+  </g>
+
+  <!-- Líneas de velocidad -->
+  <line x1="68" y1="107" x2="86" y2="107" stroke="#A3E635" stroke-width="2.5" stroke-linecap="round" opacity="0.45"/>
+  <line x1="72" y1="115" x2="88" y2="115" stroke="#A3E635" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/>
+  <line x1="76" y1="123" x2="90" y2="123" stroke="#A3E635" stroke-width="2.5" stroke-linecap="round" opacity="0.15"/>
+
+  <!-- Borde hexágono exterior lima -->
+  <polygon points="140,6 266,78 266,222 140,294 14,222 14,78" fill="none" stroke="#A3E635" stroke-width="3"/>
+</svg>
