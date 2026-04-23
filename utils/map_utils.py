@@ -20,7 +20,8 @@ def generate_map_html(
     Genera el HTML del mapa y lo guarda en output_path.
     Devuelve la ruta absoluta del archivo.
     """
-    os.makedirs(os.path.dirname(output_path) if os.path.dirname(output_path) else ".", exist_ok=True)
+    out_dir = os.path.dirname(output_path) if os.path.dirname(output_path) else "."
+    os.makedirs(out_dir, exist_ok=True)
 
     # Unir orígenes y destinos con peso diferente
     all_places: dict[str, dict] = {}

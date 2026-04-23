@@ -456,7 +456,26 @@ class StatsView:
                         output_path="assets/map_actividad.html",
                         accent=accent,
                     )
-                    open_map(html_path)
+
+                    is_web = getattr(self.page, 'web', False)
+                    if is_web:
+                        # En modo web los assets se sirven en /assets/
+                        # Construir URL absoluta desde la URL de la página
+                        try:
+                            from urllib.parse import urlparse
+                            page_url = getattr(self.page, 'url', '') or ''
+                            if page_url:
+                                p = urlparse(page_url)
+                                base = f"{p.scheme}://{p.netloc}"
+                                map_url = f"{base}/assets/map_actividad.html"
+                            else:
+                                map_url = "/assets/map_actividad.html"
+                        except Exception:
+                            map_url = "/assets/map_actividad.html"
+                        self.page.launch_url(map_url)
+                    else:
+                        open_map(html_path)
+
                     map_status.value = "✅ Mapa abierto en el navegador"
                     map_status.color = ft.Colors.GREEN_600
                 except Exception as ex:
