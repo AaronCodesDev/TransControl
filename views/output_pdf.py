@@ -164,8 +164,8 @@ class OutputPDFView:
             finally:
                 session.close()
 
-            # Intentar añadir página al PDF existente
-            _append_to_existing_pdf(pdf_path, dst)
+            # Añadir página al PDF existente
+            self._append_to_existing_pdf(pdf_path, dst)
 
             # Actualizar botones sin recargar toda la vista
             if _btn_ver_ref[0]:
@@ -304,6 +304,18 @@ class OutputPDFView:
             expand=True,
             height=48,
         )
+        btn_adjuntar = ft.OutlinedButton(
+            "Cambiar albarán" if albaran_exists else "Adjuntar albarán",
+            icon=ft.Icons.UPLOAD_FILE_ROUNDED,
+            on_click=adjuntar_albaran,
+            style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=12)),
+            expand=True,
+            height=48,
+        )
+        # Conectar referencias mutables para actualizar los botones tras adjuntar
+        _btn_ver_ref[0] = btn_albaran
+        _btn_adjuntar_ref[0] = btn_adjuntar
+
         btn_volver = ft.TextButton(
             "Ir a documentos",
             icon=ft.Icons.FORMAT_LIST_NUMBERED_ROUNDED,
@@ -335,7 +347,7 @@ class OutputPDFView:
                             ),
                             ft.Container(
                                 width=card_width,
-                                content=ft.Row([btn_albaran], spacing=10),
+                                content=ft.Row([btn_albaran, btn_adjuntar], spacing=10),
                             ),
                             ft.Container(
                                 width=card_width,
@@ -349,6 +361,59 @@ class OutputPDFView:
         )
 
     # ── helpers ────────────────────────────────────────────────
+    def _append_to_existing_pdf(self, pdf_path: str, albaran_path: str):
+        """Añade el albarán como página extra al PDF ya generado."""
+        if not os.path.exists(pdf_path):
+            return
+        ext = os.path.splitext(albaran_path)[1].lower()
+        try:
+            from pypdf import PdfWriter, PdfReader
+            import tempfile, shutil as _shutil
+
+            writer = PdfWriter()
+            # Página(s) originales
+            for page in PdfReader(pdf_path).pages:
+                writer.add_page(page)
+
+            if ext == '.pdf':
+                # Albarán es PDF: concatenar directamente
+                for page in PdfReader(albaran_path).pages:
+                    writer.add_page(page)
+            else:
+                # Albarán es imagen: crear página temporal con reportlab y añadirla
+                from reportlab.pdfgen import canvas as _canvas
+                from reportlab.lib.pagesizes import A4
+                from reportlab.lib.utils import ImageReader
+                w, h = A4
+                tmp = tempfile.mktemp(suffix='.pdf')
+                c = _canvas.Canvas(tmp, pagesize=A4)
+                c.setFont("Helvetica-Bold", 13)
+                c.setFillColorRGB(0.18, 0.49, 0.20)
+                c.drawString(50, h - 50, "Albarán adjunto")
+                c.setFillColorRGB(0, 0, 0)
+                img = ImageReader(albaran_path)
+                iw, ih = img.getSize()
+                ratio = min((w - 100) / iw, (h - 120) / ih)
+                dw, dh = iw * ratio, ih * ratio
+                c.drawImage(img, 50, (h - 80) - dh, width=dw, height=dh, mask='auto')
+                c.save()
+                for page in PdfReader(tmp).pages:
+                    writer.add_page(page)
+                os.remove(tmp)
+
+            # Sobreescribir el PDF original
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as tf:
+                tmp_out = tf.name
+            with open(tmp_out, 'wb') as f:
+                writer.write(f)
+            _shutil.move(tmp_out, pdf_path)
+
+        except ImportError:
+            # pypdf no instalado: el albarán queda guardado en DB pero no en el PDF
+            pass
+        except Exception:
+            pass
+
     def _open_dialog(self, dialog: ft.AlertDialog):
         """Añade el diálogo al overlay y lo abre (compatible con todas las versiones de Flet)."""
         # Limpia diálogos anteriores del overlay

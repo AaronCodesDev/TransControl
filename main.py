@@ -13,6 +13,7 @@ from views.users import UsersView
 from views.output_pdf import OutputPDFView
 from utils.doc_server import start_doc_server
 from views.vehicles import VehiclesView
+from views.stats import StatsView
 from utils.theme_manager import load_theme_id, save_theme_id, get_theme, THEMES
 
 
@@ -120,6 +121,8 @@ def main(page: ft.Page):
             page.views.append(UsersView(page, theme_button, user=page.user).build())
         elif route == '/vehicles':
             page.views.append(VehiclesView(page, theme_button, user=page.user).build())
+        elif route == '/stats':
+            page.views.append(StatsView(page, theme_button, user=page.user).build())
         elif route.startswith('/output_pdf/'):
             try:
                 doc_id = int(route.split('/')[-1])

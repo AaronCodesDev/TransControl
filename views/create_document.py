@@ -499,10 +499,12 @@ class CreateDocumentView:
             self._show_msg('✅ Documento creado correctamente', color=ft.Colors.GREEN_700)
             self.page.update()
 
-            # Abrir el PDF automáticamente para previsualizar
+            # Abrir el PDF con el visor del sistema
             _open_pdf(salida_pdf)
 
-            self._offer_email(doc, empresa, usuario, salida_pdf)
+            # Ir directamente a la lista de documentos
+            time.sleep(0.6)
+            self.page.go('/documents')
 
         except Exception as err:
             import traceback

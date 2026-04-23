@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TransControl — Mapa de actividad</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { background:#0d0d0d; font-family:'Segoe UI',Arial,sans-serif; color:#fff; display:flex; flex-direction:column; height:100vh; }
+    #header { padding:14px 20px; background:#111; border-bottom:1px solid #222; display:flex; align-items:center; gap:12px; }
+    #header h1 { font-size:17px; font-weight:700; color:#A3E635; }
+    #header p  { font-size:12px; color:#888; }
+    #legend { display:flex; gap:20px; margin-left:auto; font-size:11px; color:#aaa; align-items:center; }
+    .dot { width:12px; height:12px; border-radius:50%; display:inline-block; margin-right:5px; }
+    #map { flex:1; }
+    #loading { position:absolute; bottom:20px; left:50%; transform:translateX(-50%);
+               background:rgba(0,0,0,.75); color:#fff; padding:10px 20px; border-radius:20px;
+               font-size:13px; z-index:9999; display:flex; align-items:center; gap:8px; }
+    .spinner { width:14px; height:14px; border:2px solid #555; border-top-color:#A3E635;
+                border-radius:50%; animation:spin .8s linear infinite; }
+    @keyframes spin { to{ transform:rotate(360deg); } }
+    #status { font-size:11px; color:#888; position:absolute; bottom:60px; left:50%;
+               transform:translateX(-50%); background:rgba(0,0,0,.6);
+               padding:6px 14px; border-radius:12px; z-index:9999; white-space:nowrap; }
+  </style>
+</head>
+<body>
+  <div id="header">
+    <div>
+      <h1>🗺 Mapa de actividad — TransControl</h1>
+      <p>Geocodificando ubicaciones vía OpenStreetMap…</p>
+    </div>
+    <div id="legend">
+      <span><span class="dot" style="background:#A3E635;opacity:.9"></span>Origen frecuente</span>
+      <span><span class="dot" style="background:#38bdf8;opacity:.9"></span>Destino frecuente</span>
+      <span><span class="dot" style="background:#f59e0b;opacity:.9"></span>Origen y destino</span>
+    </div>
+  </div>
+  <div id="map"></div>
+  <div id="loading"><div class="spinner"></div><span id="loadingText">Iniciando…</span></div>
+  <div id="status" style="display:none"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    const PLACES = [{"name": "a", "origins": 2, "destinations": 0}, {"name": "Rubi", "origins": 1, "destinations": 0}, {"name": "b", "origins": 0, "destinations": 2}, {"name": "La Llagosta", "origins": 0, "destinations": 1}];
+    const MAX_TOTAL = 2;
+    const ACCENT = "#A3E635";
+
+    const map = L.map('map', {
+      center: [40.4, -3.7],
+      zoom: 6,
+      zoomControl: true,
+    });
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      attribution: '© OpenStreetMap contributors © CARTO',
+      subdomains: 'abcd',
+      maxZoom: 19,
+    }).addTo(map);
+
+    const loading   = document.getElementById('loading');
+    const loadingTx = document.getElementById('loadingText');
+    const statusEl  = document.getElementById('status');
+
+    async function geocode(name) {
+      const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(name)}&format=json&limit=1&countrycodes=es,pt,fr,de,it,ma`;
+      try {
+        const res = await fetch(url, { headers: { 'Accept-Language': 'es' } });
+        const data = await res.json();
+        if (data.length) return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+      } catch(e) {}
+      return null;
+    }
+
+    function markerColor(o, d) {
+      if (o > 0 && d > 0) return '#f59e0b';
+      if (o > 0) return ACCENT;
+      return '#38bdf8';
+    }
+
+    function markerRadius(o, d) {
+      const total = o + d;
+      return 8 + (total / MAX_TOTAL) * 22;
+    }
+
+    async function buildMap() {
+      const bounds = [];
+      let done = 0;
+
+      for (const p of PLACES) {
+        loadingTx.textContent = `Geocodificando ${p.name}… (${done+1}/${PLACES.length})`;
+        const coords = await geocode(p.name);
+        done++;
+
+        if (!coords) {
+          statusEl.style.display = 'block';
+          statusEl.textContent = `⚠ No encontrado: ${p.name}`;
+          setTimeout(()=>{ statusEl.style.display='none'; }, 2000);
+          continue;
+        }
+
+        bounds.push(coords);
+        const color  = markerColor(p.origins, p.destinations);
+        const radius = markerRadius(p.origins, p.destinations);
+        const total  = p.origins + p.destinations;
+
+        const circle = L.circleMarker(coords, {
+          radius,
+          color,
+          fillColor: color,
+          fillOpacity: 0.55,
+          weight: 2,
+          opacity: 0.9,
+        });
+
+        const lines = [`<b style="font-size:14px">${p.name}</b>`];
+        if (p.origins > 0)      lines.push(`🟢 Origen en <b>${p.origins}</b> viaje(s)`);
+        if (p.destinations > 0) lines.push(`🔵 Destino en <b>${p.destinations}</b> viaje(s)`);
+        lines.push(`📦 Total: <b>${total}</b> apariciones`);
+
+        circle.bindPopup(lines.join('<br>'), { maxWidth: 220 });
+        circle.bindTooltip(p.name, { permanent: false, direction: 'top' });
+        circle.addTo(map);
+
+        // Pausa para respetar rate-limit de Nominatim (1 req/s)
+        await new Promise(r => setTimeout(r, 1100));
+      }
+
+      loading.style.display = 'none';
+      if (bounds.length > 1) {
+        map.fitBounds(bounds, { padding: [40, 40] });
+      } else if (bounds.length === 1) {
+        map.setView(bounds[0], 9);
+      }
+    }
+
+    buildMap();
+  </script>
+</body>
+</html>

@@ -8,6 +8,7 @@ NAV_ITEMS = [
     ("/dashboard", ft.Icons.HOME_ROUNDED),
     ("/documents", ft.Icons.DESCRIPTION_ROUNDED),
     ("/vehicles",  ft.Icons.DIRECTIONS_CAR_ROUNDED),
+    ("/stats",     ft.Icons.BAR_CHART_ROUNDED),
     ("/companies", ft.Icons.APARTMENT_ROUNDED),
     ("/profile",   ft.Icons.PERSON_ROUNDED),
 ]
