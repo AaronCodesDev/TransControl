@@ -459,19 +459,21 @@ class StatsView:
 
                     is_web = getattr(self.page, 'web', False)
                     if is_web:
-                        # En modo web los assets se sirven en /assets/
-                        # Construir URL absoluta desde la URL de la página
-                        try:
-                            from urllib.parse import urlparse
-                            page_url = getattr(self.page, 'url', '') or ''
-                            if page_url:
-                                p = urlparse(page_url)
-                                base = f"{p.scheme}://{p.netloc}"
-                                map_url = f"{base}/assets/map_actividad.html"
-                            else:
-                                map_url = "/assets/map_actividad.html"
-                        except Exception:
-                            map_url = "/assets/map_actividad.html"
+                        # 1. Render pone RENDER_EXTERNAL_URL automáticamente
+                        import os as _os
+                        base = _os.environ.get('RENDER_EXTERNAL_URL', '').rstrip('/')
+                        # 2. Si no, intentar extraerlo de page.url
+                        if not base:
+                            try:
+                                from urllib.parse import urlparse
+                                page_url = getattr(self.page, 'url', '') or ''
+                                if page_url:
+                                    p = urlparse(page_url)
+                                    if p.netloc:
+                                        base = f"{p.scheme}://{p.netloc}"
+                            except Exception:
+                                pass
+                        map_url = f"{base}/assets/map_actividad.html" if base else "/assets/map_actividad.html"
                         self.page.launch_url(map_url)
                     else:
                         open_map(html_path)
