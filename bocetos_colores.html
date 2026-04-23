@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TransControl — Bocetos de Color</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, 'Segoe UI', sans-serif;
+  background: #0D0D0D;
+  padding: 40px 20px;
+  color: #fff;
+}
+
+h1 { text-align:center; font-size:22px; font-weight:700; margin-bottom:6px; color:#fff; }
+.intro { text-align:center; color:#666; font-size:13px; margin-bottom:48px; }
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 40px;
+  max-width: 1240px;
+  margin: 0 auto;
+}
+
+.option { display:flex; flex-direction:column; align-items:center; gap:16px; }
+.option-num {
+  font-size:11px; font-weight:700; letter-spacing:2px;
+  text-transform:uppercase; color:#555;
+}
+.option-name { font-size:18px; font-weight:700; color:#fff; }
+.option-desc { font-size:12px; color:#555; text-align:center; max-width:240px; line-height:1.5; }
+
+/* PHONE */
+.phone {
+  width:270px;
+  background:#1C1C1C;
+  border-radius:36px;
+  padding:10px;
+  border:1.5px solid #2a2a2a;
+  box-shadow: 0 32px 64px rgba(0,0,0,0.7);
+  position:relative;
+}
+.phone::before {
+  content:'';
+  position:absolute;
+  top:18px; left:50%;
+  transform:translateX(-50%);
+  width:60px; height:5px;
+  background:#2a2a2a; border-radius:3px;
+  z-index:10;
+}
+.screen {
+  border-radius:28px;
+  overflow:hidden;
+  height:520px;
+  display:flex;
+  flex-direction:column;
+  position:relative;
+}
+
+/* ══════════════════════════════════════
+   OPCION 1 — Verde Carbón
+══════════════════════════════════════ */
+.o1 { background:#FAFAFA; }
+.o1 .appbar {
+  background:#1A1A1A;
+  padding:32px 18px 14px;
+  display:flex; align-items:center; justify-content:center;
+}
+.o1 .appbar-title { font-size:15px; font-weight:700; color:#fff; }
+.o1 .body { flex:1; background:#FAFAFA; padding:14px; overflow:hidden; }
+.o1 .greeting-big { font-size:22px; font-weight:800; color:#1A1A1A; margin-bottom:2px; }
+.o1 .greeting-sub { font-size:12px; color:#999; margin-bottom:16px; }
+.o1 .stat-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:16px; }
+.o1 .stat {
+  background:#fff; border-radius:14px;
+  padding:10px 6px; text-align:center;
+  border:1px solid #EFEFEF;
+}
+.o1 .stat-n { font-size:22px; font-weight:800; color:#22C55E; }
+.o1 .stat-l { font-size:9px; color:#999; text-transform:uppercase; letter-spacing:.5px; }
+.o1 .section-lbl { font-size:11px; font-weight:700; color:#BBBBBB; letter-spacing:1px; text-transform:uppercase; margin-bottom:8px; }
+.o1 .dest-item {
+  display:flex; align-items:center; gap:8px;
+  padding:8px 0; border-bottom:1px solid #F0F0F0;
+}
+.o1 .dest-dot { width:6px; height:6px; border-radius:50%; background:#22C55E; flex-shrink:0; }
+.o1 .dest-name { font-size:12px; font-weight:500; color:#1A1A1A; flex:1; }
+.o1 .dest-count { font-size:11px; color:#BBBBBB; }
+.o1 .dest-bar-wrap { height:3px; background:#F0F0F0; border-radius:2px; margin-top:2px; }
+.o1 .dest-bar { height:3px; border-radius:2px; background:#22C55E; }
+.o1 .fab-o1 {
+  position:absolute; bottom:16px; right:16px;
+  width:48px; height:48px; border-radius:16px;
+  background:#1A1A1A;
+  display:flex; align-items:center; justify-content:center;
+  font-size:22px; color:#22C55E;
+  box-shadow:0 4px 16px rgba(0,0,0,0.2);
+}
+.o1 .doc-card {
+  background:#fff; border-radius:14px;
+  padding:10px 12px; margin-bottom:8px;
+  border:1px solid #EFEFEF;
+}
+.o1 .doc-co { font-size:12px; font-weight:700; color:#1A1A1A; }
+.o1 .doc-rt { font-size:11px; color:#999; margin:2px 0; }
+.o1 .doc-badge {
+  display:inline-block; background:#F0FDF4;
+  color:#22C55E; font-size:9px; font-weight:700;
+  border-radius:5px; padding:2px 6px;
+  border:1px solid #BBF7D0;
+}
+.o1 .nav {
+  background:#1A1A1A; height:52px;
+  display:flex; align-items:center; justify-content:space-around;
+  border-radius:0 0 28px 28px;
+}
+.o1 .nav-icon { font-size:18px; opacity:.4; }
+.o1 .nav-icon.active { opacity:1; color:#22C55E; }
+
+/* ══════════════════════════════════════
+   OPCION 2 — Bosque & Crema
+══════════════════════════════════════ */
+.o2 { background:#F5F0E8; }
+.o2 .appbar {
+  background:#2D5016;
+  padding:32px 18px 14px;
+  display:flex; align-items:center; justify-content:center;
+}
+.o2 .appbar-title { font-size:15px; font-weight:700; color:#E8F5E9; }
+.o2 .body { flex:1; background:#F5F0E8; padding:14px; overflow:hidden; }
+.o2 .greeting-big { font-size:22px; font-weight:800; color:#1C2E0A; margin-bottom:2px; }
+.o2 .greeting-sub { font-size:12px; color:#8A7E6A; margin-bottom:16px; }
+.o2 .stat-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:16px; }
+.o2 .stat {
+  background:#fff; border-radius:14px;
+  padding:10px 6px; text-align:center;
+  border:1px solid #E8E0D0;
+}
+.o2 .stat-n { font-size:22px; font-weight:800; color:#2D5016; }
+.o2 .stat-l { font-size:9px; color:#8A7E6A; text-transform:uppercase; letter-spacing:.5px; }
+.o2 .section-lbl { font-size:11px; font-weight:700; color:#A09080; letter-spacing:1px; text-transform:uppercase; margin-bottom:8px; }
+.o2 .dest-item {
+  display:flex; align-items:center; gap:8px;
+  padding:8px 0; border-bottom:1px solid #E8E0D0;
+}
+.o2 .dest-dot { width:6px; height:6px; border-radius:50%; background:#4A7A22; flex-shrink:0; }
+.o2 .dest-name { font-size:12px; font-weight:500; color:#1C2E0A; flex:1; }
+.o2 .dest-count { font-size:11px; color:#A09080; }
+.o2 .dest-bar-wrap { height:3px; background:#E8E0D0; border-radius:2px; margin-top:2px; }
+.o2 .dest-bar { height:3px; border-radius:2px; background:#4A7A22; }
+.o2 .doc-card {
+  background:#fff; border-radius:14px;
+  padding:10px 12px; margin-bottom:8px;
+  border:1px solid #E8E0D0;
+}
+.o2 .doc-co { font-size:12px; font-weight:700; color:#1C2E0A; }
+.o2 .doc-rt { font-size:11px; color:#8A7E6A; margin:2px 0; }
+.o2 .doc-badge {
+  display:inline-block; background:#F1F8E9;
+  color:#2D5016; font-size:9px; font-weight:700;
+  border-radius:5px; padding:2px 6px;
+  border:1px solid #C5E1A5;
+}
+.o2 .fab-o2 {
+  position:absolute; bottom:16px; right:16px;
+  width:48px; height:48px; border-radius:50%;
+  background:#2D5016;
+  display:flex; align-items:center; justify-content:center;
+  font-size:22px; color:#fff;
+  box-shadow:0 4px 16px rgba(45,80,22,0.4);
+}
+.o2 .nav {
+  background:#2D5016; height:52px;
+  display:flex; align-items:center; justify-content:space-around;
+  border-radius:0 0 28px 28px;
+}
+.o2 .nav-icon { font-size:18px; opacity:.35; color:#fff; }
+.o2 .nav-icon.active { opacity:1; color:#A5D6A7; }
+
+/* ══════════════════════════════════════
+   OPCION 3 — Azul Medianoche
+══════════════════════════════════════ */
+.o3 { background:#F0F4FF; }
+.o3 .appbar {
+  background:#0F2044;
+  padding:32px 18px 14px;
+  display:flex; align-items:center; justify-content:center;
+}
+.o3 .appbar-title { font-size:15px; font-weight:700; color:#fff; }
+.o3 .body { flex:1; background:#F0F4FF; padding:14px; overflow:hidden; }
+.o3 .greeting-big { font-size:22px; font-weight:800; color:#0F2044; margin-bottom:2px; }
+.o3 .greeting-sub { font-size:12px; color:#8899BB; margin-bottom:16px; }
+.o3 .stat-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:16px; }
+.o3 .stat {
+  background:#fff; border-radius:14px;
+  padding:10px 6px; text-align:center;
+  border:1px solid #E0E8FF;
+}
+.o3 .stat-n { font-size:22px; font-weight:800; color:#1A56DB; }
+.o3 .stat-l { font-size:9px; color:#8899BB; text-transform:uppercase; letter-spacing:.5px; }
+.o3 .section-lbl { font-size:11px; font-weight:700; color:#8899BB; letter-spacing:1px; text-transform:uppercase; margin-bottom:8px; }
+.o3 .dest-item {
+  display:flex; align-items:center; gap:8px;
+  padding:8px 0; border-bottom:1px solid #E0E8FF;
+}
+.o3 .dest-dot { width:6px; height:6px; border-radius:50%; background:#1A56DB; flex-shrink:0; }
+.o3 .dest-name { font-size:12px; font-weight:500; color:#0F2044; flex:1; }
+.o3 .dest-count { font-size:11px; color:#8899BB; }
+.o3 .dest-bar-wrap { height:3px; background:#E0E8FF; border-radius:2px; margin-top:2px; }
+.o3 .dest-bar { height:3px; border-radius:2px; background:#1A56DB; }
+.o3 .doc-card {
+  background:#fff; border-radius:14px;
+  padding:10px 12px; margin-bottom:8px;
+  border:1px solid #E0E8FF;
+}
+.o3 .doc-co { font-size:12px; font-weight:700; color:#0F2044; }
+.o3 .doc-rt { font-size:11px; color:#8899BB; margin:2px 0; }
+.o3 .doc-badge {
+  display:inline-block; background:#EFF6FF;
+  color:#1A56DB; font-size:9px; font-weight:700;
+  border-radius:5px; padding:2px 6px;
+  border:1px solid #BFDBFE;
+}
+.o3 .fab-o3 {
+  position:absolute; bottom:16px; right:16px;
+  width:48px; height:48px; border-radius:50%;
+  background:#1A56DB;
+  display:flex; align-items:center; justify-content:center;
+  font-size:22px; color:#fff;
+  box-shadow:0 4px 16px rgba(26,86,219,0.4);
+}
+.o3 .nav {
+  background:#0F2044; height:52px;
+  display:flex; align-items:center; justify-content:space-around;
+  border-radius:0 0 28px 28px;
+}
+.o3 .nav-icon { font-size:18px; opacity:.35; color:#fff; }
+.o3 .nav-icon.active { opacity:1; color:#93C5FD; }
+
+/* ══════════════════════════════════════
+   OPCION 4 — Pizarra & Lima
+══════════════════════════════════════ */
+.o4 { background:#111827; }
+.o4 .appbar {
+  background:#111827;
+  padding:32px 18px 14px;
+  display:flex; align-items:center; justify-content:center;
+  border-bottom:1px solid #1F2937;
+}
+.o4 .appbar-title { font-size:15px; font-weight:700; color:#F9FAFB; }
+.o4 .body { flex:1; background:#111827; padding:14px; overflow:hidden; }
+.o4 .greeting-big { font-size:22px; font-weight:800; color:#F9FAFB; margin-bottom:2px; }
+.o4 .greeting-sub { font-size:12px; color:#6B7280; margin-bottom:16px; }
+.o4 .stat-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:16px; }
+.o4 .stat {
+  background:#1F2937; border-radius:14px;
+  padding:10px 6px; text-align:center;
+  border:1px solid #374151;
+}
+.o4 .stat-n { font-size:22px; font-weight:800; color:#A3E635; }
+.o4 .stat-l { font-size:9px; color:#6B7280; text-transform:uppercase; letter-spacing:.5px; }
+.o4 .section-lbl { font-size:11px; font-weight:700; color:#4B5563; letter-spacing:1px; text-transform:uppercase; margin-bottom:8px; }
+.o4 .dest-item {
+  display:flex; align-items:center; gap:8px;
+  padding:8px 0; border-bottom:1px solid #1F2937;
+}
+.o4 .dest-dot { width:6px; height:6px; border-radius:50%; background:#A3E635; flex-shrink:0; }
+.o4 .dest-name { font-size:12px; font-weight:500; color:#E5E7EB; flex:1; }
+.o4 .dest-count { font-size:11px; color:#4B5563; }
+.o4 .dest-bar-wrap { height:3px; background:#1F2937; border-radius:2px; margin-top:2px; }
+.o4 .dest-bar { height:3px; border-radius:2px; background:#A3E635; }
+.o4 .doc-card {
+  background:#1F2937; border-radius:14px;
+  padding:10px 12px; margin-bottom:8px;
+  border:1px solid #374151;
+}
+.o4 .doc-co { font-size:12px; font-weight:700; color:#F9FAFB; }
+.o4 .doc-rt { font-size:11px; color:#6B7280; margin:2px 0; }
+.o4 .doc-badge {
+  display:inline-block; background:#1A2E05;
+  color:#A3E635; font-size:9px; font-weight:700;
+  border-radius:5px; padding:2px 6px;
+  border:1px solid #365314;
+}
+.o4 .fab-o4 {
+  position:absolute; bottom:16px; right:16px;
+  width:48px; height:48px; border-radius:16px;
+  background:#A3E635;
+  display:flex; align-items:center; justify-content:center;
+  font-size:22px; color:#111827;
+  box-shadow:0 4px 16px rgba(163,230,53,0.3);
+}
+.o4 .nav {
+  background:#111827; height:52px;
+  display:flex; align-items:center; justify-content:space-around;
+  border-radius:0 0 28px 28px;
+  border-top:1px solid #1F2937;
+}
+.o4 .nav-icon { font-size:18px; opacity:.3; color:#fff; }
+.o4 .nav-icon.active { opacity:1; color:#A3E635; }
+
+/* shared mini login screen */
+.login-screen {
+  flex:1; display:flex; flex-direction:column;
+  align-items:center; justify-content:flex-end;
+}
+.login-logo-area { display:flex; flex-direction:column; align-items:center; gap:4px; margin-bottom:0; }
+.login-logo-icon { font-size:32px; }
+.login-bottom { width:100%; padding:20px 18px; }
+.login-title { font-size:18px; font-weight:800; margin-bottom:4px; }
+.login-sub { font-size:11px; margin-bottom:14px; }
+.field { height:38px; border-radius:10px; margin-bottom:8px; padding:0 12px; font-size:12px; display:flex; align-items:center; gap:8px; }
+.field-icon { font-size:13px; opacity:.5; }
+.field-val { font-size:12px; }
+.login-btn { height:42px; border-radius:12px; margin-top:4px; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; }
+</style>
+</head>
+<body>
+
+<h1>TransControl — Elige tu paleta</h1>
+<p class="intro">4 propuestas de diseño minimalista · Dime con qué número te quedas</p>
+
+<div class="grid">
+
+  <!-- ══ OPCION 1 ══ -->
+  <div class="option">
+    <div class="option-num">Opción 01</div>
+    <div class="option-name" style="color:#22C55E">Verde & Negro</div>
+    <div class="phone">
+      <div class="screen o1">
+        <div class="o1 appbar"><span class="appbar-title">TransControl</span></div>
+        <div class="o1 body">
+          <div class="o1 greeting-big">Hola, Aaron 👋</div>
+          <div class="o1 greeting-sub">Martes, 22 de abril de 2026</div>
+          <div class="o1 stat-row">
+            <div class="o1 stat"><div class="stat-n">24</div><div class="stat-l">Docs</div></div>
+            <div class="o1 stat"><div class="stat-n">3</div><div class="stat-l">Hoy</div></div>
+            <div class="o1 stat"><div class="stat-n">8</div><div class="stat-l">Empresas</div></div>
+          </div>
+          <div class="o1 section-lbl">Destinos frecuentes</div>
+          <div class="o1 dest-item">
+            <div class="o1 dest-dot"></div>
+            <div class="o1 dest-name">Barcelona</div>
+            <div class="o1 dest-count">12×</div>
+          </div>
+          <div class="o1 dest-bar-wrap"><div class="o1 dest-bar" style="width:100%"></div></div>
+          <div class="o1 dest-item">
+            <div class="o1 dest-dot"></div>
+            <div class="o1 dest-name">Valencia</div>
+            <div class="o1 dest-count">8×</div>
+          </div>
+          <div class="o1 dest-bar-wrap"><div class="o1 dest-bar" style="width:66%"></div></div>
+          <div class="o1 dest-item">
+            <div class="o1 dest-dot" style="background:#ccc"></div>
+            <div class="o1 dest-name">Bilbao</div>
+            <div class="o1 dest-count">5×</div>
+          </div>
+          <div class="o1 dest-bar-wrap"><div class="o1 dest-bar" style="width:41%"></div></div>
+        </div>
+        <div class="o1 fab-o1">＋</div>
+        <div class="o1 nav">
+          <span class="o1 nav-icon active">⌂</span>
+          <span class="o1 nav-icon">≡</span>
+          <span class="o1 nav-icon">🚗</span>
+          <span class="o1 nav-icon">🏢</span>
+          <span class="o1 nav-icon">👤</span>
+        </div>
+      </div>
+    </div>
+    <!-- login preview -->
+    <div class="phone">
+      <div class="screen o1">
+        <div style="flex:1;background:#111;display:flex;flex-direction:column;align-items:center;justify-content:flex-end">
+          <div style="text-align:center;padding-bottom:20px">
+            <div style="font-size:36px">🚚</div>
+            <div style="font-size:20px;font-weight:800;color:#fff;margin-top:6px">TransControl</div>
+            <div style="font-size:11px;color:#555;margin-top:2px">Gestión de transportes</div>
+          </div>
+          <div style="background:#FAFAFA;border-radius:24px 24px 0 0;padding:24px 20px;width:100%">
+            <div style="font-size:18px;font-weight:800;color:#1A1A1A;margin-bottom:3px">Bienvenido</div>
+            <div style="font-size:11px;color:#999;margin-bottom:14px">Accede a tu cuenta</div>
+            <div class="field" style="background:#F4F4F4;border:1px solid #EEE;"><span class="field-icon">✉</span><span class="field-val" style="color:#999">correo@email.com</span></div>
+            <div class="field" style="background:#F4F4F4;border:1px solid #EEE;"><span class="field-icon">🔒</span><span class="field-val" style="color:#999">••••••••</span></div>
+            <div class="login-btn" style="background:#1A1A1A;color:#22C55E;margin-top:8px">Iniciar sesión</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="option-desc">Fondo blanco puro · Acento verde lima brillante · Barra negra. Contraste fuerte y moderno.</div>
+  </div>
+
+  <!-- ══ OPCION 2 ══ -->
+  <div class="option">
+    <div class="option-num">Opción 02</div>
+    <div class="option-name" style="color:#4A7A22">Bosque & Crema</div>
+    <div class="phone">
+      <div class="screen o2">
+        <div class="o2 appbar"><span class="appbar-title">TransControl</span></div>
+        <div class="o2 body">
+          <div class="o2 greeting-big">Hola, Aaron 👋</div>
+          <div class="o2 greeting-sub">Martes, 22 de abril de 2026</div>
+          <div class="o2 stat-row">
+            <div class="o2 stat"><div class="stat-n">24</div><div class="stat-l">Docs</div></div>
+            <div class="o2 stat"><div class="stat-n">3</div><div class="stat-l">Hoy</div></div>
+            <div class="o2 stat"><div class="stat-n">8</div><div class="stat-l">Empresas</div></div>
+          </div>
+          <div class="o2 section-lbl">Destinos frecuentes</div>
+          <div class="o2 dest-item">
+            <div class="o2 dest-dot"></div>
+            <div class="o2 dest-name">Barcelona</div>
+            <div class="o2 dest-count">12×</div>
+          </div>
+          <div class="o2 dest-bar-wrap"><div class="o2 dest-bar" style="width:100%"></div></div>
+          <div class="o2 dest-item">
+            <div class="o2 dest-dot"></div>
+            <div class="o2 dest-name">Valencia</div>
+            <div class="o2 dest-count">8×</div>
+          </div>
+          <div class="o2 dest-bar-wrap"><div class="o2 dest-bar" style="width:66%"></div></div>
+          <div class="o2 dest-item">
+            <div class="o2 dest-dot" style="background:#C5E1A5"></div>
+            <div class="o2 dest-name">Bilbao</div>
+            <div class="o2 dest-count">5×</div>
+          </div>
+          <div class="o2 dest-bar-wrap"><div class="o2 dest-bar" style="width:41%"></div></div>
+        </div>
+        <div class="o2 fab-o2">＋</div>
+        <div class="o2 nav">
+          <span class="o2 nav-icon active">⌂</span>
+          <span class="o2 nav-icon">≡</span>
+          <span class="o2 nav-icon">🚗</span>
+          <span class="o2 nav-icon">🏢</span>
+          <span class="o2 nav-icon">👤</span>
+        </div>
+      </div>
+    </div>
+    <div class="phone">
+      <div class="screen o2">
+        <div style="flex:1;background:linear-gradient(160deg,#2D5016,#4A7A22,#F5F0E8);display:flex;flex-direction:column;align-items:center;justify-content:flex-end">
+          <div style="text-align:center;padding-bottom:20px">
+            <div style="font-size:36px">🚚</div>
+            <div style="font-size:20px;font-weight:800;color:#fff;margin-top:6px">TransControl</div>
+          </div>
+          <div style="background:#F5F0E8;border-radius:24px 24px 0 0;padding:24px 20px;width:100%">
+            <div style="font-size:18px;font-weight:800;color:#1C2E0A;margin-bottom:3px">Bienvenido</div>
+            <div style="font-size:11px;color:#8A7E6A;margin-bottom:14px">Accede a tu cuenta</div>
+            <div class="field" style="background:#EDE8DE;border:1px solid #DDD8CE;"><span class="field-icon">✉</span><span class="field-val" style="color:#8A7E6A">correo@email.com</span></div>
+            <div class="field" style="background:#EDE8DE;border:1px solid #DDD8CE;"><span class="field-icon">🔒</span><span class="field-val" style="color:#8A7E6A">••••••••</span></div>
+            <div class="login-btn" style="background:#2D5016;color:#E8F5E9;margin-top:8px">Iniciar sesión</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="option-desc">Fondo crema cálido · Verde bosque oscuro · Tono natural y orgánico. Diferente y elegante.</div>
+  </div>
+
+  <!-- ══ OPCION 3 ══ -->
+  <div class="option">
+    <div class="option-num">Opción 03</div>
+    <div class="option-name" style="color:#3B82F6">Azul Marino</div>
+    <div class="phone">
+      <div class="screen o3">
+        <div class="o3 appbar"><span class="appbar-title">TransControl</span></div>
+        <div class="o3 body">
+          <div class="o3 greeting-big">Hola, Aaron 👋</div>
+          <div class="o3 greeting-sub">Martes, 22 de abril de 2026</div>
+          <div class="o3 stat-row">
+            <div class="o3 stat"><div class="stat-n">24</div><div class="stat-l">Docs</div></div>
+            <div class="o3 stat"><div class="stat-n">3</div><div class="stat-l">Hoy</div></div>
+            <div class="o3 stat"><div class="stat-n">8</div><div class="stat-l">Empresas</div></div>
+          </div>
+          <div class="o3 section-lbl">Destinos frecuentes</div>
+          <div class="o3 dest-item">
+            <div class="o3 dest-dot"></div>
+            <div class="o3 dest-name">Barcelona</div>
+            <div class="o3 dest-count">12×</div>
+          </div>
+          <div class="o3 dest-bar-wrap"><div class="o3 dest-bar" style="width:100%"></div></div>
+          <div class="o3 dest-item">
+            <div class="o3 dest-dot"></div>
+            <div class="o3 dest-name">Valencia</div>
+            <div class="o3 dest-count">8×</div>
+          </div>
+          <div class="o3 dest-bar-wrap"><div class="o3 dest-bar" style="width:66%"></div></div>
+          <div class="o3 dest-item">
+            <div class="o3 dest-dot" style="background:#BFDBFE"></div>
+            <div class="o3 dest-name">Bilbao</div>
+            <div class="o3 dest-count">5×</div>
+          </div>
+          <div class="o3 dest-bar-wrap"><div class="o3 dest-bar" style="width:41%"></div></div>
+        </div>
+        <div class="o3 fab-o3">＋</div>
+        <div class="o3 nav">
+          <span class="o3 nav-icon active">⌂</span>
+          <span class="o3 nav-icon">≡</span>
+          <span class="o3 nav-icon">🚗</span>
+          <span class="o3 nav-icon">🏢</span>
+          <span class="o3 nav-icon">👤</span>
+        </div>
+      </div>
+    </div>
+    <div class="phone">
+      <div class="screen o3">
+        <div style="flex:1;background:linear-gradient(160deg,#0F2044,#1A3A6B,#F0F4FF);display:flex;flex-direction:column;align-items:center;justify-content:flex-end">
+          <div style="text-align:center;padding-bottom:20px">
+            <div style="font-size:36px">🚚</div>
+            <div style="font-size:20px;font-weight:800;color:#fff;margin-top:6px">TransControl</div>
+          </div>
+          <div style="background:#F0F4FF;border-radius:24px 24px 0 0;padding:24px 20px;width:100%">
+            <div style="font-size:18px;font-weight:800;color:#0F2044;margin-bottom:3px">Bienvenido</div>
+            <div style="font-size:11px;color:#8899BB;margin-bottom:14px">Accede a tu cuenta</div>
+            <div class="field" style="background:#E8EDFF;border:1px solid #C7D2FE;"><span class="field-icon">✉</span><span class="field-val" style="color:#8899BB">correo@email.com</span></div>
+            <div class="field" style="background:#E8EDFF;border:1px solid #C7D2FE;"><span class="field-icon">🔒</span><span class="field-val" style="color:#8899BB">••••••••</span></div>
+            <div class="login-btn" style="background:#1A56DB;color:#fff;margin-top:8px">Iniciar sesión</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="option-desc">Fondo azul muy pálido · Marino oscuro · Acento azul real. Profesional y corporativo.</div>
+  </div>
+
+  <!-- ══ OPCION 4 ══ -->
+  <div class="option">
+    <div class="option-num">Opción 04</div>
+    <div class="option-name" style="color:#A3E635">Oscuro & Lima</div>
+    <div class="phone">
+      <div class="screen o4">
+        <div class="o4 appbar"><span class="appbar-title">TransControl</span></div>
+        <div class="o4 body">
+          <div class="o4 greeting-big">Hola, Aaron 👋</div>
+          <div class="o4 greeting-sub">Martes, 22 de abril de 2026</div>
+          <div class="o4 stat-row">
+            <div class="o4 stat"><div class="stat-n">24</div><div class="stat-l">Docs</div></div>
+            <div class="o4 stat"><div class="stat-n">3</div><div class="stat-l">Hoy</div></div>
+            <div class="o4 stat"><div class="stat-n">8</div><div class="stat-l">Empresas</div></div>
+          </div>
+          <div class="o4 section-lbl">Destinos frecuentes</div>
+          <div class="o4 dest-item">
+            <div class="o4 dest-dot"></div>
+            <div class="o4 dest-name">Barcelona</div>
+            <div class="o4 dest-count">12×</div>
+          </div>
+          <div class="o4 dest-bar-wrap"><div class="o4 dest-bar" style="width:100%"></div></div>
+          <div class="o4 dest-item">
+            <div class="o4 dest-dot"></div>
+            <div class="o4 dest-name">Valencia</div>
+            <div class="o4 dest-count">8×</div>
+          </div>
+          <div class="o4 dest-bar-wrap"><div class="o4 dest-bar" style="width:66%"></div></div>
+          <div class="o4 dest-item">
+            <div class="o4 dest-dot" style="background:#365314"></div>
+            <div class="o4 dest-name">Bilbao</div>
+            <div class="o4 dest-count">5×</div>
+          </div>
+          <div class="o4 dest-bar-wrap"><div class="o4 dest-bar" style="width:41%"></div></div>
+        </div>
+        <div class="o4 fab-o4">＋</div>
+        <div class="o4 nav">
+          <span class="o4 nav-icon active">⌂</span>
+          <span class="o4 nav-icon">≡</span>
+          <span class="o4 nav-icon">🚗</span>
+          <span class="o4 nav-icon">🏢</span>
+          <span class="o4 nav-icon">👤</span>
+        </div>
+      </div>
+    </div>
+    <div class="phone">
+      <div class="screen o4">
+        <div style="flex:1;background:#111827;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 20px 0;">
+          <div style="text-align:center;margin-bottom:32px">
+            <div style="width:64px;height:64px;background:#1F2937;border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 10px;border:1px solid #374151">🚚</div>
+            <div style="font-size:22px;font-weight:800;color:#F9FAFB">TransControl</div>
+            <div style="font-size:11px;color:#4B5563;margin-top:2px">Gestión de transportes</div>
+          </div>
+          <div style="width:100%">
+            <div class="field" style="background:#1F2937;border:1px solid #374151;"><span class="field-icon" style="color:#6B7280">✉</span><span class="field-val" style="color:#6B7280">correo@email.com</span></div>
+            <div class="field" style="background:#1F2937;border:1px solid #374151;"><span class="field-icon" style="color:#6B7280">🔒</span><span class="field-val" style="color:#6B7280">••••••••</span></div>
+            <div class="login-btn" style="background:#A3E635;color:#111827;margin-top:10px;font-weight:800">Iniciar sesión</div>
+            <div style="text-align:center;margin-top:12px;font-size:11px;color:#4B5563">¿No tienes cuenta? <span style="color:#A3E635">Regístrate</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="option-desc">Fondo gris grafito oscuro · Acento verde lima neón. Moderno, tech y diferente.</div>
+  </div>
+
+</div>
+
+<p style="text-align:center;margin-top:48px;font-size:12px;color:#333">Dime el número (1, 2, 3 o 4) y lo aplico a toda la app</p>
+
+</body>
+</html>

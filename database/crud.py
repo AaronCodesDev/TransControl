@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from database.models import Usuario, Documentos, Empresas
-from utils.security import hash_password, verify_password  # 👈 Importa las dos funciones de seguridad
+from utils.security import hash_password, verify_password
 from datetime import datetime
 
 ### CRUD PARA USUARIOS ###
@@ -122,3 +123,35 @@ def get_company_count_all(db: Session):
 # Obtener total de Usuarios Registrados
 def get_user_count_all(db: Session):
     return db.query(Usuario).count()
+
+
+def get_top_destinations(db: Session, user: Usuario = None, limit: int = 5):
+    """Devuelve los destinos más frecuentes con su conteo."""
+    query = db.query(
+        Documentos.lugar_destino,
+        func.count(Documentos.lugar_destino).label('total')
+    )
+    if user and user.rol != 'admin':
+        query = query.filter(Documentos.usuarios_id == user.id)
+    return (
+        query.group_by(Documentos.lugar_destino)
+        .order_by(func.count(Documentos.lugar_destino).desc())
+        .limit(limit)
+        .all()
+    )
+
+
+def get_top_origins(db: Session, user: Usuario = None, limit: int = 5):
+    """Devuelve los orígenes más frecuentes con su conteo."""
+    query = db.query(
+        Documentos.lugar_origen,
+        func.count(Documentos.lugar_origen).label('total')
+    )
+    if user and user.rol != 'admin':
+        query = query.filter(Documentos.usuarios_id == user.id)
+    return (
+        query.group_by(Documentos.lugar_origen)
+        .order_by(func.count(Documentos.lugar_origen).desc())
+        .limit(limit)
+        .all()
+    )

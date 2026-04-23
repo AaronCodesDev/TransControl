@@ -2,6 +2,7 @@ import flet as ft
 from database.crud import login_user
 from database.credentials import load_credentials, clear_credentials, save_credentials
 
+
 class LoginView:
     def __init__(self, page: ft.Page, on_login_success, theme_button, go_to_register):
         self.page = page
@@ -11,26 +12,34 @@ class LoginView:
 
         guardado = load_credentials()
 
-        # Campos
         self.email = ft.TextField(
             label='Correo electrónico',
             value=guardado['email'] if guardado else '',
-            autofocus=True
+            autofocus=True,
+            prefix_icon=ft.Icons.EMAIL_OUTLINED,
+            border_radius=14,
+            filled=True,
+            focused_border_color='#2E7D32',
         )
         self.password = ft.TextField(
             label='Contraseña',
             password=True,
             can_reveal_password=True,
-            value=guardado['password'] if guardado else ''
+            value=guardado['password'] if guardado else '',
+            prefix_icon=ft.Icons.LOCK_OUTLINED,
+            border_radius=14,
+            filled=True,
+            focused_border_color='#2E7D32',
         )
         self.remember_me = ft.Checkbox(
-            label="Recordarme",
-            value=True if guardado else False
+            label='Recordarme',
+            value=True if guardado else False,
+            active_color='#2E7D32',
         )
-
-        # Mensajes
-        self.error_text = ft.Text('', color=ft.Colors.RED, size=12, visible=False)
-        self.message_text = ft.Text('', color=ft.Colors.GREEN, size=12, visible=False)
+        self.error_text = ft.Text('', color=ft.Colors.RED_400, size=13, visible=False,
+                                  text_align=ft.TextAlign.CENTER)
+        self.message_text = ft.Text('', color='#2E7D32', size=13, visible=False,
+                                    text_align=ft.TextAlign.CENTER)
 
     def reset_fields(self):
         self.email.value = ''
@@ -44,38 +53,28 @@ class LoginView:
         def login(e):
             login_btn.disabled = True
             self.page.update()
-
             try:
                 db = self.page.db
                 user = login_user(db, self.email.value, self.password.value)
-
                 if user:
-                    print(f"✅ Login exitoso para {user.email}")
                     self.error_text.visible = False
-                    self.message_text.value = f'✅ Bienvenido {user.nombre} {user.apellido}'
+                    self.message_text.value = f'Bienvenido, {user.nombre} {user.apellido}'
                     self.message_text.visible = True
-
                     if self.remember_me.value:
                         save_credentials(self.email.value, self.password.value)
                     else:
                         clear_credentials()
-
                     self.page.update()
                     self.on_login_success(user)
                 else:
-                    print("❌ Login fallido - Email o contraseña incorrectos")
                     clear_credentials()
                     self.reset_fields()
-                    self.message_text.visible = False
                     self.error_text.value = 'Usuario o contraseña incorrectos'
                     self.error_text.visible = True
                     self.page.update()
-
             except Exception as ex:
-                print(f"⚠️ Error inesperado en login: {str(ex)}")
                 clear_credentials()
                 self.reset_fields()
-                self.message_text.visible = False
                 self.error_text.value = f'Error inesperado: {str(ex)}'
                 self.error_text.visible = True
                 self.page.update()
@@ -83,59 +82,120 @@ class LoginView:
                 login_btn.disabled = False
                 self.page.update()
 
-        login_btn = ft.ElevatedButton('Iniciar Sesión', on_click=login)
+        login_btn = ft.Container(
+            content=ft.Text('Iniciar sesión', size=15, weight=ft.FontWeight.W_700,
+                            color=ft.Colors.WHITE, text_align=ft.TextAlign.CENTER),
+            on_click=login,
+            border_radius=14,
+            padding=ft.padding.symmetric(vertical=14),
+            gradient=ft.LinearGradient(
+                begin=ft.alignment.center_left,
+                end=ft.alignment.center_right,
+                colors=['#2E7D32', '#43A047'],
+            ),
+            shadow=ft.BoxShadow(
+                blur_radius=16,
+                color=ft.Colors.with_opacity(0.35, '#2E7D32'),
+                offset=ft.Offset(0, 4),
+            ),
+            alignment=ft.alignment.center,
+        )
 
-        logo_patch = 'assets/logo.png' if self.page.theme_mode == ft.ThemeMode.DARK else 'logo.png'
-        logo = ft.Image(src=logo_patch, width=250, height=250)
+        # ── Sección superior con gradiente ─────────────────
+        top_section = ft.Container(
+            padding=ft.padding.only(top=56, bottom=36, left=20, right=20),
+            gradient=ft.LinearGradient(
+                begin=ft.alignment.top_center,
+                end=ft.alignment.bottom_center,
+                colors=['#1B5E20', '#2E7D32'],
+            ),
+            content=ft.Column(
+                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                spacing=10,
+                controls=[
+                    ft.Row([self.theme_button], alignment=ft.MainAxisAlignment.END),
+                    ft.Container(
+                        width=72, height=72,
+                        border_radius=20,
+                        bgcolor=ft.Colors.with_opacity(0.18, ft.Colors.WHITE),
+                        border=ft.border.all(1, ft.Colors.with_opacity(0.28, ft.Colors.WHITE)),
+                        shadow=ft.BoxShadow(
+                            blur_radius=24,
+                            color=ft.Colors.with_opacity(0.20, ft.Colors.BLACK),
+                            offset=ft.Offset(0, 8),
+                        ),
+                        alignment=ft.alignment.center,
+                        content=ft.Icon(ft.Icons.LOCAL_SHIPPING_ROUNDED, size=36, color=ft.Colors.WHITE),
+                    ),
+                    ft.Text('TransControl', size=24, weight=ft.FontWeight.W_800,
+                            color=ft.Colors.WHITE),
+                    ft.Text('GESTIÓN DE TRANSPORTES', size=10,
+                            color=ft.Colors.with_opacity(0.7, ft.Colors.WHITE),
+                            weight=ft.FontWeight.W_600),
+                ],
+            ),
+        )
+
+        # ── Tarjeta blanca inferior ────────────────────────
+        bottom_card = ft.Container(
+            expand=True,
+            border_radius=ft.border_radius.only(top_left=28, top_right=28),
+            bgcolor=ft.Colors.WHITE,
+            padding=ft.padding.only(left=24, right=24, top=28, bottom=24),
+            shadow=ft.BoxShadow(
+                blur_radius=32,
+                color=ft.Colors.with_opacity(0.14, ft.Colors.BLACK),
+                offset=ft.Offset(0, -8),
+            ),
+            content=ft.Column(
+                scroll=ft.ScrollMode.AUTO,
+                spacing=0,
+                controls=[
+                    ft.Text('Bienvenido', size=22, weight=ft.FontWeight.W_700, color='#1B5E20'),
+                    ft.Container(height=4),
+                    ft.Text('Accede a tu cuenta para continuar', size=13, color='#9E9E9E'),
+                    ft.Container(height=22),
+                    self.email,
+                    ft.Container(height=12),
+                    self.password,
+                    ft.Container(height=8),
+                    ft.Row([self.remember_me], alignment=ft.MainAxisAlignment.START),
+                    ft.Container(height=4),
+                    self.error_text,
+                    self.message_text,
+                    ft.Container(height=8),
+                    login_btn,
+                    ft.Container(height=16),
+                    ft.Row(
+                        alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                        controls=[
+                            ft.TextButton(
+                                'Olvidar datos',
+                                icon=ft.Icons.DELETE_OUTLINE,
+                                on_click=lambda e: (clear_credentials(), self.reset_fields()),
+                                style=ft.ButtonStyle(color='#BDBDBD'),
+                            ),
+                            ft.TextButton(
+                                '¿No tienes cuenta? Regístrate',
+                                on_click=lambda e: self.go_to_register(),
+                                style=ft.ButtonStyle(color='#2E7D32'),
+                            ),
+                        ],
+                    ),
+                ],
+            ),
+        )
 
         return ft.View(
             route='/login',
+            bgcolor='#1B5E20',
+            padding=0,
+            scroll=ft.ScrollMode.AUTO,
             controls=[
-                ft.Container(
-                    content=ft.Row(
-                        controls=[self.theme_button],
-                        alignment=ft.MainAxisAlignment.END
-                    ),
-                    padding=ft.padding.only(top=20, right=20)
-                ),
-
-                # Formulario centrado
-                ft.Container(
-                    alignment=ft.alignment.center,
-                    content=ft.Column(
-                        controls=[
-                            logo,
-                            ft.Text('Iniciar Sesión', size=30, weight='bold'),
-                            ft.Container(self.email, alignment=ft.alignment.center, width=300),
-                            ft.Container(self.password, alignment=ft.alignment.center, width=300),
-                            ft.Container(
-                                content=ft.Row([self.remember_me], alignment=ft.MainAxisAlignment.START),
-                                alignment=ft.alignment.center,
-                                width=300
-                            ),
-                            ft.Container(login_btn, alignment=ft.alignment.center, width=300),
-                            ft.Container(self.error_text, alignment=ft.alignment.center, width=300),
-                            ft.Container(self.message_text, alignment=ft.alignment.center, width=300),
-                            ft.Container(
-                                ft.TextButton(
-                                    "❌ Olvidar datos recordados",
-                                    on_click=lambda e: (clear_credentials(), self.reset_fields())
-                                ),
-                                alignment=ft.alignment.center,
-                                width=300
-                            ),
-                            ft.Container(
-                                ft.TextButton(
-                                    "¿No tienes cuenta? Regístrate",
-                                    on_click=lambda e: self.go_to_register()
-                                ),
-                                alignment=ft.alignment.center,
-                                width=300
-                            ),
-                        ],
-                        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                        spacing=10,
-                    )
+                ft.Column(
+                    spacing=0,
+                    expand=True,
+                    controls=[top_section, bottom_card],
                 )
-            ]
+            ],
         )

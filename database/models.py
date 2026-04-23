@@ -18,6 +18,7 @@ class Usuario(Base):
     provincia = Column(String(50), nullable=True)
     codigo_postal = Column(String(20), nullable=True)
     telefono = Column(String(30), nullable=True)
+    foto_perfil = Column(String(300), nullable=True)
     fecha_creacion = Column(DateTime)
     rol = Column(String(20))
     usuario_id = Column(Integer, ForeignKey('usuarios.id'), nullable=True)  # Para relaciones jerárquicas
@@ -25,6 +26,7 @@ class Usuario(Base):
 
     empresas = relationship('Empresas', back_populates='usuario')
     documentos = relationship('Documentos', back_populates='usuario')
+    vehiculos = relationship('Vehiculos', back_populates='usuario')
 
 
 class Empresas(Base):
@@ -58,6 +60,21 @@ class Empresas(Base):
     )
 
 
+class Vehiculos(Base):
+    __tablename__ = 'vehiculos'
+
+    id = Column(Integer, primary_key=True, index=True)
+    usuario_id = Column(Integer, ForeignKey('usuarios.id'), nullable=False)
+    marca = Column(String(50), nullable=False)
+    modelo = Column(String(50), nullable=False)
+    matricula = Column(String(20), nullable=False)
+    matricula_remolque = Column(String(20), nullable=True)
+    fecha_creacion = Column(DateTime, default=datetime.now)
+
+    usuario = relationship('Usuario', back_populates='vehiculos')
+    documentos = relationship('Documentos', back_populates='vehiculo')
+
+
 class Documentos(Base):
     __tablename__ = 'documentos_control'
 
@@ -65,6 +82,7 @@ class Documentos(Base):
     usuarios_id = Column(Integer, ForeignKey('usuarios.id'))
     empresas_id_transportista = Column(Integer, ForeignKey('empresas.id'))
     empresas_id_contratante = Column(Integer, ForeignKey('empresas.id'))
+    vehiculo_id = Column(Integer, ForeignKey('vehiculos.id'), nullable=True)
     lugar_origen = Column(String(200), nullable=False)
     lugar_destino = Column(String(200), nullable=False)
     fecha_transporte = Column(Date)
@@ -75,9 +93,13 @@ class Documentos(Base):
     peso = Column(Float, nullable=False)
     firma_cargador = Column(String(100))
     firma_transportista = Column(String(100))
+    firma_cargador_img = Column(String(300), nullable=True)      # ruta imagen sello cargador
+    firma_transportista_img = Column(String(300), nullable=True)  # ruta imagen firma conductor
+    albaran_path = Column(String(300), nullable=True)             # ruta albarán adjunto
     archivo = Column(String(200), nullable=True)
 
     usuario = relationship('Usuario', back_populates='documentos')
+    vehiculo = relationship('Vehiculos', back_populates='documentos')
 
     transportista = relationship(
         'Empresas',

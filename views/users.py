@@ -239,9 +239,9 @@ class UsersView:
     def _build_bottom_appbar(self):
         return ft.BottomAppBar(
             bgcolor=ft.Colors.GREEN_700,
-            shape=ft.NotchShape.CIRCULAR,
             elevation=8,
             content=ft.Row(
+                expand=True,
                 controls=[
                     ft.IconButton(icon=ft.Icons.HOME, icon_color=ft.Colors.WHITE, tooltip="Inicio", on_click=lambda e: self.page.go('/dashboard')),
                     ft.IconButton(icon=ft.Icons.FORMAT_LIST_NUMBERED, icon_color=ft.Colors.WHITE, tooltip="Documentos", on_click=lambda e: self.page.go('/documents')),
